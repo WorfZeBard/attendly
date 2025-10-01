@@ -1,24 +1,26 @@
+// usecases/sign_up_user.dart
 import 'package:dartz/dartz.dart';
-import 'user_entity.dart';
-import 'failure.dart';
-import 'user_repository.dart';
+import '../entities/user.dart';
+import '../repositories/auth_repository.dart';
+import '../../../core/error/failures.dart';
 
-// 1. Sign Up User
 class SignUpUser {
-  final UserRepository repository;
+  final AuthRepository repository;
 
   SignUpUser(this.repository);
 
-  Future<Either<Failure, UserEntity>> call({
+  Future<Either<Failure, User>> call({
     required String name,
     required String email,
     required String password,
+    String? phone,
     required UserRole role,
-  }) {
-    return repository.signUp(
+  }) async {
+    return await repository.signUpUser(
       name: name,
       email: email,
       password: password,
+      phone: phone,
       role: role,
     );
   }
