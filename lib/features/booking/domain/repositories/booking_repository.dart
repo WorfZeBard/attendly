@@ -7,3 +7,5 @@ abstract class BookingRepository {
   Future<Either<Failure, Booking>> createBooking(Booking booking);
   Future<Either<Failure, List<Booking>>> getBookings(String professionalId);
 }
+
+

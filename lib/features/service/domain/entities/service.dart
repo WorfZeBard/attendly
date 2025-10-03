@@ -19,3 +19,5 @@ class Service extends Equatable {
   @override
   List<Object?> get props => [id, professionalId, name, durationMinutes, price];
 }
+
+

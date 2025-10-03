@@ -17,3 +17,5 @@ class Booking extends Equatable {
   @override
   List<Object?> get props => [id, clientId, professionalId, dateTime];
 }
+
+
