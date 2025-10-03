@@ -15,3 +15,5 @@ class BusinessHours extends Equatable {
   @override
   List<Object?> get props => [professionalId, workingDays, timeSlots];
 }
+
+

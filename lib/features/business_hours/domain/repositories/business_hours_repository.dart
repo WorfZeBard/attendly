@@ -7,3 +7,5 @@ abstract class BusinessHoursRepository {
   Future<Either<Failure, BusinessHours>> setBusinessHours(BusinessHours hours);
   Future<Either<Failure, BusinessHours>> getBusinessHours(String professionalId);
 }
+
+

@@ -17,3 +17,5 @@ class BookingNotification extends Equatable {
   @override
   List<Object?> get props => [id, userId, message, timestamp];
 }
+
+

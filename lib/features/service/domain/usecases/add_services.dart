@@ -1,6 +1,6 @@
 // usecases/add_service.dart
 import 'package:dartz/dartz.dart';
-import '../../../core/error/failures.dart';
+import '../../../user/domain/failures/failure.dart';
 import '../entities/service.dart';
 import '../repositories/service_repository.dart';
 
@@ -13,3 +13,5 @@ class AddService {
     return await repository.addService(service);
   }
 }
+
+

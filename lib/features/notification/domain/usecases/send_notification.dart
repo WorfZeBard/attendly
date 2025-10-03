@@ -2,7 +2,7 @@
 import 'package:dartz/dartz.dart';
 import '../entities/notification.dart';
 import '../repositories/notification_repository.dart';
-import '../../../core/error/failures.dart';
+import '../../../user/domain/failures/failure.dart';
 
 class SendBookingNotification {
   final NotificationRepository repository;
@@ -15,3 +15,5 @@ class SendBookingNotification {
     return await repository.sendNotification(notification);
   }
 }
+
+

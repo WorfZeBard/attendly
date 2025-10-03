@@ -15,3 +15,5 @@ class Professional extends Equatable {
   @override
   List<Object?> get props => [id, businessName, logoUrl];
 }
+
+
