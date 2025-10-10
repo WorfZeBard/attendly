@@ -1,6 +1,6 @@
 // usecases/get_services.dart
 import 'package:dartz/dartz.dart';
-import '../../../user/domain/failures/failure.dart';
+import '../../../../core/error/failures.dart';
 import '../entities/service.dart';
 import '../repositories/service_repository.dart';
 

@@ -1,6 +1,6 @@
 // usecases/remove_service.dart
 import 'package:dartz/dartz.dart';
-import '../../../user/domain/failures/failure.dart';
+import '../../../../core/error/failures.dart';
 import '../repositories/service_repository.dart';
 
 class RemoveService {

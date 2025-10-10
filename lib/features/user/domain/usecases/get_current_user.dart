@@ -1,9 +1,7 @@
 import 'package:dartz/dartz.dart';
-import 'user_entity.dart';
-import 'package:dartz/dartz.dart';
-import 'user_entity.dart';
-import 'failure.dart';
-import 'user_repository.dart';
+import '../entities/user.dart';
+import '../../../../core/error/failures.dart';
+import '../repositories/user_repository.dart';
 
 // 3. Get Current User
 class GetCurrentUser {
@@ -11,7 +9,7 @@ class GetCurrentUser {
 
   GetCurrentUser(this.repository);
 
-  Future<Either<Failure, UserEntity>> call() {
+  Future<Either<Failure, User>> call() {
     return repository.getCurrentUser();
   }
 }
