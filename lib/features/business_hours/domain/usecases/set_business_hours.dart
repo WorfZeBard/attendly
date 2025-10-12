@@ -2,7 +2,7 @@
 import 'package:dartz/dartz.dart';
 import '../entities/business_hours.dart';
 import '../repositories/business_hours_repository.dart';
-import '../../../core/error/failures.dart';
+import '../../../../core/error/failures.dart';
 
 class SetBusinessHours {
   final BusinessHoursRepository repository;

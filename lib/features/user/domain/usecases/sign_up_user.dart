@@ -1,11 +1,11 @@
 // usecases/sign_up_user.dart
 import 'package:dartz/dartz.dart';
 import '../entities/user.dart';
-import '../repositories/auth_repository.dart';
-import '../failures/failure.dart';
+import '../../../../core/error/failures.dart';
+import '../repositories/user_repository.dart';
 
 class SignUpUser {
-  final AuthRepository repository;
+  final UserRepository repository;
 
   SignUpUser(this.repository);
 

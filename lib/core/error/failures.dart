@@ -9,6 +9,7 @@ abstract class Failure extends Equatable {
   List<Object?> get props => [message];
 }
 
+// Examples of specific failures
 class AuthFailure extends Failure {
   const AuthFailure(String message) : super(message);
 }
@@ -20,5 +21,3 @@ class NetworkFailure extends Failure {
 class ServerFailure extends Failure {
   const ServerFailure(String message) : super(message);
 }
-
-

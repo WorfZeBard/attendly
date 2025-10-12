@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
-import 'user_entity.dart';
-import 'failure.dart';
-import 'user_repository.dart';
+import '../entities/user.dart';
+import '../../../../core/error/failures.dart';
+import '../repositories/user_repository.dart';
 
 // 4. Logout User
 class LogoutUser {
@@ -10,6 +10,6 @@ class LogoutUser {
   LogoutUser(this.repository);
 
   Future<Either<Failure, void>> call() {
-    return repository.logout();
+    return repository.logoutUser();
   }
 }

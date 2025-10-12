@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
-import 'user_entity.dart';
-import 'failure.dart';
-import 'user_repository.dart';
+import '../entities/user.dart';
+import '../../../../core/error/failures.dart';
+import '../repositories/user_repository.dart';
 
 // 2. Login User
 class LoginUser {
@@ -9,11 +9,11 @@ class LoginUser {
 
   LoginUser(this.repository);
 
-  Future<Either<Failure, UserEntity>> call({
+  Future<Either<Failure, User>> call({
     required String email,
     required String password,
   }) {
-    return repository.login(
+    return repository.loginUser(
       email: email,
       password: password,
     );
