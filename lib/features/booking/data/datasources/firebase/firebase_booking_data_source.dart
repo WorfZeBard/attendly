@@ -1,7 +1,6 @@
 import '../../../../../../../../../core/error/failures.dart';
 import '../../../../../../../../../features/booking/data/models/booking_model.dart';
-import '../../../../../../../../../features/booking/domain/entities/booking.dart';
-import '../../../../data/datasources/booking_data_source.dart';
+import '../../../data/datasources/booking_data_source.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 

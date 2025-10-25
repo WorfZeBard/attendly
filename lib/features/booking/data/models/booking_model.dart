@@ -1,7 +1,8 @@
-import '../../../../domain/entities/booking.dart';
+import '../../../booking/domain/entities/booking.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BookingModel extends Booking {
-  BookingModel({
+  const BookingModel({
     required super.id,
     required super.clientId,
     required super.professionalId,

@@ -1,4 +1,4 @@
-import '../../models/service_model.dart';
+import '../models/service_model.dart';
 
 abstract class ServiceDataSource {
   Future<ServiceModel> addService(ServiceModel service);

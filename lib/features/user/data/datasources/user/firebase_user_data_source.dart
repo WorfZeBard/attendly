@@ -1,9 +1,10 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import '../../../../models/user_model.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import '../../../domain/entities/user.dart' as domain;
+import '../../models/user_model.dart';
 import 'user_data_source.dart';
 
 class FirebaseUserDataSource implements UserDataSource {
-  final FirebaseAuth firebaseAuth;
+  final firebase_auth.FirebaseAuth firebaseAuth;
 
   FirebaseUserDataSource({required this.firebaseAuth});
 
@@ -13,16 +14,22 @@ class FirebaseUserDataSource implements UserDataSource {
     required String email,
     required String password,
     String? phone,
-    required UserRole role,
+    required domain.UserRole role,
   }) async {
-    final UserCredential userCredential =
+    final firebase_auth.UserCredential userCredential =
         await firebaseAuth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
-    
+
     await userCredential.user?.updateDisplayName(name);
-    return UserModel.fromFirebaseUser(userCredential);
+    final firebase_auth.User? user = userCredential.user;
+
+    if (user == null) {
+      throw firebase_auth.FirebaseAuthException(code: 'user-null');
+    }
+
+    return UserModel.fromFirebaseUser(user, role: role);
   }
 
   @override
@@ -30,24 +37,28 @@ class FirebaseUserDataSource implements UserDataSource {
     required String email,
     required String password,
   }) async {
-    final UserCredential userCredential =
+    final firebase_auth.UserCredential userCredential =
         await firebaseAuth.signInWithEmailAndPassword(
       email: email,
       password: password,
     );
-    return UserModel.fromFirebaseUser(userCredential);
+
+    final firebase_auth.User? user = userCredential.user;
+    if (user == null) {
+      throw firebase_auth.FirebaseAuthException(code: 'user-null');
+    }
+
+    return UserModel.fromFirebaseUser(user);
   }
 
   @override
   Future<UserModel> getCurrentUser() async {
-    final User? currentUser = firebaseAuth.currentUser;
+    final firebase_auth.User? currentUser = firebaseAuth.currentUser;
     if (currentUser == null) {
-      throw const FirebaseAuthException(code: 'no-user');
+      throw firebase_auth.FirebaseAuthException(code: 'no-user');
     }
-    return UserModel.fromFirebaseUser(UserCredential(
-      user: currentUser,
-      credential: null,
-    ));
+
+    return UserModel.fromFirebaseUser(currentUser);
   }
 
   @override
