@@ -1,22 +1,24 @@
-import '../../../../domain/entities/user.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import '../../domain/entities/user.dart';
 
 class UserModel extends User {
-  UserModel({
+  const UserModel({
     required super.id,
     required super.name,
     required super.email,
-    required super.phone,
     required super.role,
+    super.phone,
   });
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'email': email,
-      'phone': phone,
-      'role': role.toString().split('.').last
-    };
+  factory UserModel.fromFirebaseUser(firebase_auth.User firebaseUser,
+      {UserRole? role}) {
+    return UserModel(
+      id: firebaseUser.uid,
+      name: firebaseUser.displayName ?? '',
+      email: firebaseUser.email ?? '',
+      phone: firebaseUser.phoneNumber,
+      role: role ?? UserRole.client,
+    );
   }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -25,27 +27,18 @@ class UserModel extends User {
       name: json['name'],
       email: json['email'],
       phone: json['phone'],
-      role: json['role'] == 'client' ? UserRole.client : UserRole.professional,
+      role: UserRole.values.firstWhere(
+        (r) => r.toString() == 'UserRole.${json['role']}',
+        orElse: () => UserRole.client,
+      ),
     );
   }
 
-  factory UserModel.fromFirebaseUser(UserCredential firebaseUser) {
-    return UserModel(
-      id: firebaseUser.user!.uid,
-      name: firebaseUser.user!.displayName ?? '',
-      email: firebaseUser.user!.email!,
-      phone: firebaseUser.user!.phoneNumber,
-      role: UserRole.client, // Default role
-    );
-  }
-
-  factory UserModel.fromUser(User user) {
-    return UserModel(
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-    );
-  }
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'email': email,
+        'phone': phone,
+        'role': role.name,
+      };
 }

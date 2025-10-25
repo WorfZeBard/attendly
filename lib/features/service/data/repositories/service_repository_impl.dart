@@ -1,10 +1,10 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
-import '../../../domain/entities/service.dart';
-import '../../../domain/repositories/service_repository.dart';
-import '../../datasources/service_data_source.dart';
-import '../../models/service_model.dart';
+import '../../domain/entities/service.dart';
+import '../../domain/repositories/service_repository.dart';
+import '../datasources/service_data_source.dart';
+import '../models/service_model.dart';
 
 class ServiceRepositoryImpl implements ServiceRepository {
   final ServiceDataSource dataSource;

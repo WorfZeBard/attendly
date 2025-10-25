@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../../../core/error/failures.dart';
-import '../../../domain/entities/service.dart';
+import '../../../../../core/error/failures.dart';
 import '../../models/service_model.dart';
 import '../service_data_source.dart';
 

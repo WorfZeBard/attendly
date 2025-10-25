@@ -1,7 +1,7 @@
-import '../../../../domain/entities/service.dart';
+import '../../domain/entities/service.dart';
 
 class ServiceModel extends Service {
-  ServiceModel({
+  const ServiceModel({
     required super.id,
     required super.professionalId,
     required super.name,
