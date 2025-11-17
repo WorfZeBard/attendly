@@ -1,0 +1,2121 @@
+
+================================================================================
+// FILE: ./scripts/seed_services.dart
+================================================================================
+
+// scripts/seed_services.dart
+import 'package:attendly/features/service/data/datasources/firebase/firebase_service_data_source.dart';
+import 'package:attendly/features/service/data/models/service_model.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:attendly/firebase_options.dart';
+
+void main() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  final serviceDataSource = FirebaseServiceDataSource();
+
+  // Sample Service Data for UAT - Associate with known professional IDs
+  final List<Map<String, dynamic>> sampleServices = [
+    {
+      'professionalId':
+          'PROFESSIONAL_ID_1', // Replace with actual seeded professional ID
+      'name': 'Haircut',
+      'durationMinutes': 30,
+      'price': 25.0,
+    },
+    {
+      'professionalId': 'PROFESSIONAL_ID_1',
+      'name': 'Haircut & Beard Trim',
+      'durationMinutes': 45,
+      'price': 40.0,
+    },
+    {
+      'professionalId': 'PROFESSIONAL_ID_2',
+      'name': 'Basic Massage',
+      'durationMinutes': 60,
+      'price': 60.0,
+    },
+    {
+      'professionalId': 'PROFESSIONAL_ID_2',
+      'name': 'Deep Tissue Massage',
+      'durationMinutes': 90,
+      'price': 90.0,
+    },
+  ];
+
+  for (final serviceData in sampleServices) {
+    try {
+      print(
+          'Creating service: ${serviceData['name']} for professional ${serviceData['professionalId']}');
+      final service = ServiceModel(
+        id: '', // Firestore will auto-generate
+        professionalId: serviceData['professionalId'] as String,
+        name: serviceData['name'] as String,
+        durationMinutes: serviceData['durationMinutes'] as int,
+        price: serviceData['price'] as double,
+      );
+
+      await serviceDataSource.addService(service);
+      print('Successfully created service: ${serviceData['name']}');
+    } catch (e) {
+      print('Error creating service ${serviceData['name']}: $e');
+    }
+  }
+
+  print('Service seeding completed.');
+}
+
+================================================================================
+// FILE: ./scripts/seed_business_hours.dart
+================================================================================
+
+// scripts/seed_business_hours.dart
+import 'package:attendly/features/business_hours/data/datasources/firebase/business_hours_firestore.dart';
+import 'package:attendly/features/business_hours/data/models/business_hours_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:attendly/firebase_options.dart';
+
+void main() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // IMPORTANT: This script requires an authenticated user context.
+  // For UAT seeding, you might need to authenticate as the professional
+  // whose business hours you are setting, or use an admin account with
+  // appropriate permissions if your security rules allow it.
+  // This example assumes a default (potentially unauthenticated) context
+  // which might fail depending on your Firestore rules.
+  // You might need to sign in as the specific user first or use Admin SDK.
+  final auth = FirebaseAuth.instance;
+
+  // Example: Sign in as a specific user (replace with actual credentials)
+  // try {
+  //   await auth.signInWithEmailAndPassword(
+  //     email: 'uat_prof1@example.com',
+  //     password: 'TempPass123!',
+  //   );
+  // } catch (e) {
+  //   print("Error signing in for business hours seeding: $e");
+  //   return; // Exit if authentication fails
+  // }
+
+  final businessHoursDataSource =
+      BusinessHoursFirestoreDataSource(firebaseAuth: auth);
+
+  // Sample Business Hours Data for UAT - Associate with known professional IDs
+  final List<Map<String, dynamic>> sampleBusinessHours = [
+    {
+      'professionalId':
+          'PROFESSIONAL_ID_1', // Replace with actual seeded professional ID
+      'workingDays': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+      'startTime': '09:00',
+      'endTime': '17:00',
+      'breaks': [
+        {'start': '12:00', 'end': '13:00'}
+      ],
+    },
+    {
+      'professionalId': 'PROFESSIONAL_ID_2',
+      'workingDays': ['Tue', 'Wed', 'Thu', 'Sat'],
+      'startTime': '10:00',
+      'endTime': '19:00',
+      'breaks': [
+        {'start': '14:30', 'end': '15:00'},
+        {'start': '17:00', 'end': '17:30'}
+      ],
+    },
+  ];
+
+  for (final hoursData in sampleBusinessHours) {
+    try {
+      print(
+          'Setting business hours for professional: ${hoursData['professionalId']}');
+      final businessHours = BusinessHoursModel(
+        professionalId: hoursData['professionalId'] as String,
+        workingDays: List<String>.from(hoursData['workingDays'] as List),
+        startTime: hoursData['startTime'] as String,
+        endTime: hoursData['endTime'] as String,
+        breaks: List<Map<String, String>>.from((hoursData['breaks'] as List)
+            .map((b) => Map<String, String>.from(b))),
+      );
+
+      await businessHoursDataSource.setBusinessHours(businessHours);
+      print(
+          'Successfully set business hours for professional: ${hoursData['professionalId']}');
+    } catch (e) {
+      print(
+          'Error setting business hours for ${hoursData['professionalId']}: $e');
+    }
+  }
+
+  print('Business hours seeding completed.');
+}
+
+================================================================================
+// FILE: ./scripts/seed_booking_confirmation.dart
+================================================================================
+
+// scripts/seed_booking_confirmations.dart
+import 'package:attendly/features/booking_confirmation/data/datasources/firebase/firebase_booking_confirmation_data_source.dart';
+import 'package:attendly/features/booking_confirmation/data/models/booking_confirmation_model.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:attendly/firebase_options.dart';
+
+void main() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  final confirmationDataSource = FirebaseBookingConfirmationDataSource();
+
+  // Sample Booking Confirmation Data for UAT - Use known Booking, Client, and Professional IDs
+  final List<Map<String, dynamic>> sampleConfirmations = [
+    {
+      'bookingId': 'BOOKING_ID_1', // Replace with actual seeded booking ID
+      'clientId': 'CLIENT_ID_1', // Replace with corresponding client ID
+      'professionalId':
+          'PROFESSIONAL_ID_1', // Replace with corresponding professional ID
+      'confirmedAt': DateTime.now(), // Current timestamp
+      'isConfirmed': true, // Or false for declined
+    },
+    {
+      'bookingId': 'BOOKING_ID_2',
+      'clientId': 'CLIENT_ID_1',
+      'professionalId': 'PROFESSIONAL_ID_2',
+      'confirmedAt':
+          DateTime.now().subtract(Duration(minutes: 30)), // 30 mins ago
+      'isConfirmed': true,
+    },
+  ];
+
+  for (final confirmData in sampleConfirmations) {
+    try {
+      print(
+          'Creating booking confirmation for booking: ${confirmData['bookingId']}');
+      final confirmation = BookingConfirmationModel(
+        bookingId: confirmData['bookingId'] as String,
+        clientId: confirmData['clientId'] as String,
+        professionalId: confirmData['professionalId'] as String,
+        confirmedAt: confirmData['confirmedAt'] as DateTime,
+        isConfirmed: confirmData['isConfirmed'] as bool,
+      );
+
+      await confirmationDataSource.setBookingConfirmation(confirmation);
+      print(
+          'Successfully created booking confirmation for booking: ${confirmData['bookingId']}');
+    } catch (e) {
+      print(
+          'Error creating booking confirmation for booking ${confirmData['bookingId']}: $e');
+    }
+  }
+
+  print('Booking confirmation seeding completed.');
+}
+
+================================================================================
+// FILE: ./scripts/seed_users.dart
+================================================================================
+
+// scripts/seed_users.dart
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:attendly/firebase_options.dart';
+
+void main() async {
+  // No WidgetsFlutterBinding here — this is not a UI Flutter app
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  final auth = FirebaseAuth.instance;
+  final firestore = FirebaseFirestore.instance;
+
+  final List<Map<String, dynamic>> sampleUsers = [
+    {
+      'name': 'UAT Client 1',
+      'email': 'uat_client1@example.com',
+      'password': 'TempPass123!',
+      'phone': '+12345678901',
+      'role': 'client',
+    },
+    {
+      'name': 'UAT Professional 1',
+      'email': 'uat_prof1@example.com',
+      'password': 'TempPass123!',
+      'phone': '+12345678902',
+      'role': 'professional',
+    },
+    {
+      'name': 'UAT Professional 2',
+      'email': 'uat_prof2@example.com',
+      'password': 'TempPass123!',
+      'phone': '+12345678903',
+      'role': 'professional',
+    },
+  ];
+
+  for (final userData in sampleUsers) {
+    try {
+      print('Creating user: ${userData['email']}');
+
+      final credential = await auth.createUserWithEmailAndPassword(
+        email: userData['email']!,
+        password: userData['password']!,
+      );
+
+      await firestore.collection('users').doc(credential.user!.uid).set({
+        'name': userData['name'],
+        'email': userData['email'],
+        'phone': userData['phone'],
+        'role': userData['role'],
+        'createdBy': 'uat-seed-script',
+      });
+
+      print('Successfully created user: ${userData['email']}');
+    } catch (e) {
+      print('Error creating user ${userData['email']}: $e');
+    }
+  }
+
+  print('User seeding completed.');
+}
+
+================================================================================
+// FILE: ./scripts/seed_bookings.dart
+================================================================================
+
+// scripts/seed_bookings.dart
+import 'package:attendly/features/booking/data/datasources/firebase/firebase_booking_data_source.dart';
+import 'package:attendly/features/booking/data/models/booking_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:attendly/firebase_options.dart';
+
+void main() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // IMPORTANT: This script requires an authenticated user context.
+  // The 'createdById' will be set to the currently authenticated user's ID.
+  // For UAT seeding, you might need to authenticate as a specific user
+  // (e.g., an admin or the client making the booking) or use an admin account
+  // if your security rules permit it.
+  // This example assumes a default (potentially unauthenticated) context
+  // which might fail depending on your Firestore rules.
+  // You might need to sign in as the specific user first or use Admin SDK.
+  final auth = FirebaseAuth.instance;
+
+  // Example: Sign in as a client user (replace with actual credentials)
+  // try {
+  //   await auth.signInWithEmailAndPassword(
+  //     email: 'uat_client1@example.com',
+  //     password: 'TempPass123!',
+  //   );
+  // } catch (e) {
+  //   print("Error signing in for booking seeding: $e");
+  //   return; // Exit if authentication fails
+  // }
+
+  final bookingDataSource = FirebaseBookingDataSource(firebaseAuth: auth);
+
+  // Sample Booking Data for UAT - Use known Client and Professional IDs
+  final List<Map<String, dynamic>> sampleBookings = [
+    {
+      'clientId': 'CLIENT_ID_1', // Replace with actual seeded client ID
+      'professionalId':
+          'PROFESSIONAL_ID_1', // Replace with actual seeded professional ID
+      'dateTime':
+          DateTime.now().add(Duration(days: 1, hours: 10)), // Tomorrow at 10 AM
+    },
+    {
+      'clientId': 'CLIENT_ID_1',
+      'professionalId': 'PROFESSIONAL_ID_2',
+      'dateTime': DateTime.now()
+          .add(Duration(days: 2, hours: 15)), // Day after tomorrow at 3 PM
+    },
+    {
+      'clientId': 'ANOTHER_CLIENT_ID', // Replace with another seeded client ID
+      'professionalId': 'PROFESSIONAL_ID_1',
+      'dateTime': DateTime.now()
+          .add(Duration(days: 3, hours: 11)), // In 3 days at 11 AM
+    },
+  ];
+
+  for (final bookingData in sampleBookings) {
+    try {
+      print(
+          'Creating booking for client ${bookingData['clientId']} with professional ${bookingData['professionalId']} at ${bookingData['dateTime']}');
+      final booking = BookingModel(
+        id: '', // Firestore will auto-generate
+        clientId: bookingData['clientId'] as String,
+        professionalId: bookingData['professionalId'] as String,
+        dateTime: bookingData['dateTime'] as DateTime,
+      );
+
+      await bookingDataSource.createBookingModel(booking);
+      print(
+          'Successfully created booking for professional: ${bookingData['professionalId']}');
+    } catch (e) {
+      print(
+          'Error creating booking for professional ${bookingData['professionalId']}: $e');
+    }
+  }
+
+  print('Booking seeding completed.');
+}
+
+================================================================================
+// FILE: ./.dart_tool/dartpad/web_plugin_registrant.dart
+================================================================================
+
+// Flutter web plugin registrant file.
+//
+// Generated file. Do not edit.
+//
+
+// @dart = 2.13
+// ignore_for_file: type=lint
+
+import 'package:cloud_firestore_web/cloud_firestore_web.dart';
+import 'package:firebase_auth_web/firebase_auth_web.dart';
+import 'package:firebase_core_web/firebase_core_web.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+
+void registerPlugins([final Registrar? pluginRegistrar]) {
+  final Registrar registrar = pluginRegistrar ?? webPluginRegistrar;
+  FirebaseFirestoreWeb.registerWith(registrar);
+  FirebaseAuthWeb.registerWith(registrar);
+  FirebaseCoreWeb.registerWith(registrar);
+  registrar.registerMessageHandler();
+}
+
+================================================================================
+// FILE: ./test/widget_test.dart
+================================================================================
+
+// This is a basic Flutter widget test.
+//
+// To perform an interaction with a widget in your test, use the WidgetTester
+// utility in the flutter_test package. For example, you can send tap and scroll
+// gestures. You can also use WidgetTester to find child widgets in the widget
+// tree, read text, and verify that the values of widget properties are correct.
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:attendly/main.dart';
+
+void main() {
+  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+    // Build our app and trigger a frame.
+    await tester.pumpWidget(const MyApp());
+
+    // Verify that our counter starts at 0.
+    expect(find.text('0'), findsOneWidget);
+    expect(find.text('1'), findsNothing);
+
+    // Tap the '+' icon and trigger a frame.
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pump();
+
+    // Verify that our counter has incremented.
+    expect(find.text('0'), findsNothing);
+    expect(find.text('1'), findsOneWidget);
+  });
+}
+
+================================================================================
+// FILE: ./lib/main.dart
+================================================================================
+
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        // This is the theme of your application.
+        //
+        // TRY THIS: Try running your application with "flutter run". You'll see
+        // the application has a purple toolbar. Then, without quitting the app,
+        // try changing the seedColor in the colorScheme below to Colors.green
+        // and then invoke "hot reload" (save your changes or press the "hot
+        // reload" button in a Flutter-supported IDE, or press "r" if you used
+        // the command line to start the app).
+        //
+        // Notice that the counter didn't reset back to zero; the application
+        // state is not lost during the reload. To reset the state, use hot
+        // restart instead.
+        //
+        // This works for code too, not just values: Most code changes can be
+        // tested with just a hot reload.
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  // This widget is the home page of your application. It is stateful, meaning
+  // that it has a State object (defined below) that contains fields that affect
+  // how it looks.
+
+  // This class is the configuration for the state. It holds the values (in this
+  // case the title) provided by the parent (in this case the App widget) and
+  // used by the build method of the State. Fields in a Widget subclass are
+  // always marked "final".
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int _counter = 0;
+
+  void _incrementCounter() {
+    setState(() {
+      // This call to setState tells the Flutter framework that something has
+      // changed in this State, which causes it to rerun the build method below
+      // so that the display can reflect the updated values. If we changed
+      // _counter without calling setState(), then the build method would not be
+      // called again, and so nothing would appear to happen.
+      _counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // This method is rerun every time setState is called, for instance as done
+    // by the _incrementCounter method above.
+    //
+    // The Flutter framework has been optimized to make rerunning build methods
+    // fast, so that you can just rebuild anything that needs updating rather
+    // than having to individually change instances of widgets.
+    return Scaffold(
+      appBar: AppBar(
+        // TRY THIS: Try changing the color here to a specific color (to
+        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
+        // change color while the other colors stay the same.
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        title: Text(widget.title),
+      ),
+      body: Center(
+        // Center is a layout widget. It takes a single child and positions it
+        // in the middle of the parent.
+        child: Column(
+          // Column is also a layout widget. It takes a list of children and
+          // arranges them vertically. By default, it sizes itself to fit its
+          // children horizontally, and tries to be as tall as its parent.
+          //
+          // Column has various properties to control how it sizes itself and
+          // how it positions its children. Here we use mainAxisAlignment to
+          // center the children vertically; the main axis here is the vertical
+          // axis because Columns are vertical (the cross axis would be
+          // horizontal).
+          //
+          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
+          // action in the IDE, or press "p" in the console), to see the
+          // wireframe for each widget.
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            const Text(
+              'You have pushed the button this many times:',
+            ),
+            Text(
+              '$_counter',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
+================================================================================
+// FILE: ./lib/firebase_options.dart
+================================================================================
+
+// File generated by FlutterFire CLI.
+// ignore_for_file: type=lint
+import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
+
+/// Default [FirebaseOptions] for use with your Firebase apps.
+///
+/// Example:
+/// ```dart
+/// import 'firebase_options.dart';
+/// // ...
+/// await Firebase.initializeApp(
+///   options: DefaultFirebaseOptions.currentPlatform,
+/// );
+/// ```
+class DefaultFirebaseOptions {
+  static FirebaseOptions get currentPlatform {
+    if (kIsWeb) {
+      return web;
+    }
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        return android;
+      case TargetPlatform.iOS:
+        return ios;
+      case TargetPlatform.macOS:
+        return macos;
+      case TargetPlatform.windows:
+        return windows;
+      case TargetPlatform.linux:
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for linux - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
+      default:
+        throw UnsupportedError(
+          'DefaultFirebaseOptions are not supported for this platform.',
+        );
+    }
+  }
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyDlgiogIv8a4104nT8pHOhejGJXcuAL44E',
+    appId: '1:1099496840630:web:577b8d77949d19b160f517',
+    messagingSenderId: '1099496840630',
+    projectId: 'attendly-dd63f',
+    authDomain: 'attendly-dd63f.firebaseapp.com',
+    storageBucket: 'attendly-dd63f.firebasestorage.app',
+    measurementId: 'G-N46G08LV8P',
+  );
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'AIzaSyCNxqcy6h9eTN8wuDLJC7UwEzO2S_KO2CQ',
+    appId: '1:1099496840630:android:83f08a7f93e670e560f517',
+    messagingSenderId: '1099496840630',
+    projectId: 'attendly-dd63f',
+    storageBucket: 'attendly-dd63f.firebasestorage.app',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyDqA96trXpAwYoUxs7O-jNpK6AqD-Bw1d0',
+    appId: '1:1099496840630:ios:2eb1d97d381bd29760f517',
+    messagingSenderId: '1099496840630',
+    projectId: 'attendly-dd63f',
+    storageBucket: 'attendly-dd63f.firebasestorage.app',
+    iosBundleId: 'com.example.attendly',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyDqA96trXpAwYoUxs7O-jNpK6AqD-Bw1d0',
+    appId: '1:1099496840630:ios:2eb1d97d381bd29760f517',
+    messagingSenderId: '1099496840630',
+    projectId: 'attendly-dd63f',
+    storageBucket: 'attendly-dd63f.firebasestorage.app',
+    iosBundleId: 'com.example.attendly',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyDlgiogIv8a4104nT8pHOhejGJXcuAL44E',
+    appId: '1:1099496840630:web:13f991e24dd70b1760f517',
+    messagingSenderId: '1099496840630',
+    projectId: 'attendly-dd63f',
+    authDomain: 'attendly-dd63f.firebaseapp.com',
+    storageBucket: 'attendly-dd63f.firebasestorage.app',
+    measurementId: 'G-JDPNEYHZ4W',
+  );
+}
+
+================================================================================
+// FILE: ./lib/features/booking/domain/entities/booking.dart
+================================================================================
+
+// entities/booking.dart
+import 'package:equatable/equatable.dart';
+
+class Booking extends Equatable {
+  final String id;
+  final String clientId;
+  final String professionalId;
+  final DateTime dateTime;
+
+  const Booking({
+    required this.id,
+    required this.clientId,
+    required this.professionalId,
+    required this.dateTime,
+  });
+
+  @override
+  List<Object?> get props => [id, clientId, professionalId, dateTime];
+}
+
+
+
+================================================================================
+// FILE: ./lib/features/booking/domain/usecases/create_booking.dart
+================================================================================
+
+// usecases/create_booking.dart
+import 'package:dartz/dartz.dart';
+import '../entities/booking.dart';
+import '../repositories/booking_repository.dart';
+import '../../../../core/error/failures.dart';
+
+class CreateBooking {
+  final BookingRepository repository;
+
+  CreateBooking(this.repository);
+
+  Future<Either<Failure, Booking>> call(Booking booking) async {
+    return await repository.createBooking(booking);
+  }
+}
+
+
+
+================================================================================
+// FILE: ./lib/features/booking/domain/repositories/booking_repository.dart
+================================================================================
+
+// repositories/booking_repository.dart
+import 'package:dartz/dartz.dart';
+import '../entities/booking.dart';
+import '../../../../core/error/failures.dart';
+
+abstract class BookingRepository {
+  Future<Either<Failure, Booking>> createBooking(Booking booking);
+  Future<Either<Failure, List<Booking>>> getBookings(String professionalId);
+}
+
+
+
+================================================================================
+// FILE: ./lib/features/booking/data/datasources/booking_data_source.dart
+================================================================================
+
+import '../../../booking/data/models/booking_model.dart';
+
+abstract class BookingDataSource {
+  Future<BookingModel> createBookingModel(BookingModel bookingModel);
+  Future<List<BookingModel>> getBookingsByProfessionalId(String professionalId);
+}
+================================================================================
+// FILE: ./lib/features/booking/data/datasources/firebase/firebase_booking_data_source.dart
+================================================================================
+
+import '../../../../../../../../../core/error/failures.dart';
+import '../../../../../../../../../features/booking/data/models/booking_model.dart';
+import '../../../data/datasources/booking_data_source.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+class FirebaseBookingDataSource implements BookingDataSource {
+  final CollectionReference bookingsCollection =
+      FirebaseFirestore.instance.collection('bookings');
+
+  final FirebaseAuth firebaseAuth;
+
+  FirebaseBookingDataSource({required this.firebaseAuth});
+
+  @override
+  Future<BookingModel> createBookingModel(BookingModel bookingModel) async {
+    final String userId = firebaseAuth.currentUser?.uid ?? '';
+    if (userId.isEmpty) {
+      throw const AuthFailure('User not authenticated');
+    }
+
+    // Ensure the booking has an ID or generate one
+    final String bookingId = bookingModel.id.isNotEmpty
+        ? bookingModel.id
+        : bookingsCollection.doc().id;
+
+    // Create the booking document
+    final DocumentReference documentReference = bookingsCollection.doc(bookingId);
+    
+    // Convert the booking model to JSON and add it to Firestore
+    final Map<String, dynamic> bookingData = bookingModel.toJson();
+    
+    // Add audit fields
+    bookingData['createdById'] = userId;
+    bookingData['createdOn'] = FieldValue.serverTimestamp();
+    bookingData['status'] = 'pending';  // Default status
+    
+    await documentReference.set(bookingData);
+    
+    // Return the updated model with the generated ID
+    return BookingModel.fromJson({
+      ...bookingData,
+      'id': bookingId
+    });
+  }
+
+  @override
+  Future<List<BookingModel>> getBookingsByProfessionalId(String professionalId) async {
+    final String userId = firebaseAuth.currentUser?.uid ?? '';
+    if (userId.isEmpty) {
+      throw const AuthFailure('User not authenticated');
+    }
+
+    final QuerySnapshot querySnapshot = await bookingsCollection
+      .where('professionalId', isEqualTo: professionalId)
+      .where('status', isNotEqualTo: 'cancelled')
+      .orderBy('dateTime')
+      .get();
+    
+    final List<BookingModel> bookings = querySnapshot.docs.map((DocumentSnapshot document) {
+      final Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+      return BookingModel.fromJson(data);
+    }).toList();
+    
+    return bookings;
+  }
+}
+================================================================================
+// FILE: ./lib/features/booking/data/repositories/booking_repository_impl.dart
+================================================================================
+
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
+import '../../domain/repositories/booking_repository.dart';
+import '../../domain/entities/booking.dart';
+import '../datasources/booking_data_source.dart';
+import '../models/booking_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+class BookingRepositoryImpl implements BookingRepository {
+  final BookingDataSource dataSource;
+
+  BookingRepositoryImpl({required this.dataSource});
+
+  @override
+  Future<Either<Failure, Booking>> createBooking(Booking booking) async {
+    try {
+      final BookingModel bookingModel = 
+          BookingModel.fromEntity(booking as BookingModel);
+      
+      final BookingModel result = 
+          await dataSource.createBookingModel(bookingModel);
+      
+      return Right(result);
+    } on FirebaseAuthException catch (e) {
+      return Left(AuthFailure(e.message ?? 'Authentication failed'));
+    } on FirebaseException catch (e) {
+      return Left(ServerFailure('Firestore error: ${e.message}'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Booking>>> getBookings(
+      String professionalId) async {
+    try {
+      final List<BookingModel> result = 
+          await dataSource.getBookingsByProfessionalId(professionalId);
+      
+      return Right(result);
+    } on FirebaseAuthException catch (e) {
+      return Left(AuthFailure(e.message ?? 'Authentication failed'));
+    } on FirebaseException catch (e) {
+      return Left(ServerFailure('Firestore error: ${e.message}'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+}
+================================================================================
+// FILE: ./lib/features/booking/data/models/booking_model.dart
+================================================================================
+
+import '../../../booking/domain/entities/booking.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class BookingModel extends Booking {
+  const BookingModel({
+    required super.id,
+    required super.clientId,
+    required super.professionalId,
+    required super.dateTime,
+  });
+
+  factory BookingModel.fromEntity(Booking entity) {
+    return BookingModel(
+      id: entity.id,
+      clientId: entity.clientId,
+      professionalId: entity.professionalId,
+      dateTime: entity.dateTime,
+    );
+  }
+
+  factory BookingModel.fromJson(Map<String, dynamic> json) {
+    return BookingModel(
+      id: json['id'],
+      clientId: json['clientId'],
+      professionalId: json['professionalId'],
+      dateTime: (json['dateTime'] as Timestamp).toDate(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'clientId': clientId,
+      'professionalId': professionalId,
+      'dateTime': dateTime,
+    };
+  }
+}
+================================================================================
+// FILE: ./lib/features/booking_confirmation/domain/entities/booking_confirmation.dart
+================================================================================
+
+import 'package:equatable/equatable.dart';
+
+class BookingConfirmation extends Equatable {
+  final String bookingId;
+  final String clientId;
+  final String professionalId;
+  final DateTime confirmedAt;
+  final bool isConfirmed;
+
+  const BookingConfirmation({
+    required this.bookingId,
+    required this.clientId,
+    required this.professionalId,
+    required this.confirmedAt,
+    required this.isConfirmed,
+  });
+
+  @override
+  List<Object?> get props => [
+        bookingId,
+        clientId,
+        professionalId,
+        confirmedAt,
+        isConfirmed,
+      ];
+}
+
+================================================================================
+// FILE: ./lib/features/booking_confirmation/domain/usecases/get_booking_confirmation.dart
+================================================================================
+
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
+import '../entities/booking_confirmation.dart';
+import '../repositories/booking_confirmation_repository.dart';
+
+class GetBookingConfirmation {
+  final BookingConfirmationRepository repository;
+
+  GetBookingConfirmation(this.repository);
+
+  Future<Either<Failure, BookingConfirmation>> call(String bookingId) async {
+    return await repository.getBookingConfirmation(bookingId);
+  }
+}
+
+================================================================================
+// FILE: ./lib/features/booking_confirmation/domain/usecases/confirm_booking.dart
+================================================================================
+
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
+import '../entities/booking_confirmation.dart';
+import '../repositories/booking_confirmation_repository.dart';
+
+class ConfirmBooking {
+  final BookingConfirmationRepository repository;
+
+  ConfirmBooking(this.repository);
+
+  Future<Either<Failure, BookingConfirmation>> call({
+    required String bookingId,
+    required String clientId,
+    required String professionalId,
+    required DateTime confirmedAt,
+  }) async {
+    return await repository.confirmBooking(
+      bookingId: bookingId,
+      clientId: clientId,
+      professionalId: professionalId,
+      confirmedAt: confirmedAt,
+    );
+  }
+}
+
+================================================================================
+// FILE: ./lib/features/booking_confirmation/domain/repositories/booking_confirmation_repository.dart
+================================================================================
+
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
+import '../entities/booking_confirmation.dart';
+
+abstract class BookingConfirmationRepository {
+  Future<Either<Failure, BookingConfirmation>> confirmBooking({
+    required String bookingId,
+    required String clientId,
+    required String professionalId,
+    required DateTime confirmedAt,
+  });
+
+  Future<Either<Failure, BookingConfirmation>> getBookingConfirmation(
+    String bookingId,
+  );
+}
+
+================================================================================
+// FILE: ./lib/features/booking_confirmation/data/datasources/booking_confirmation_data_source.dart
+================================================================================
+
+import '../models/booking_confirmation_model.dart';
+
+abstract class BookingConfirmationDataSource {
+  Future<BookingConfirmationModel> getBookingConfirmation(String bookingId);
+  Future<BookingConfirmationModel> setBookingConfirmation(
+      BookingConfirmationModel confirmation);
+}
+
+================================================================================
+// FILE: ./lib/features/booking_confirmation/data/datasources/firebase/firebase_booking_confirmation_data_source.dart
+================================================================================
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../../../../../../core/error/failures.dart';
+import '../../models/booking_confirmation_model.dart';
+import '../booking_confirmation_data_source.dart';
+
+class FirebaseBookingConfirmationDataSource
+    implements BookingConfirmationDataSource {
+  final CollectionReference bookingConfirmationsCollection = FirebaseFirestore
+      .instance
+      .collection('bookingConfirmations');
+
+  @override
+  Future<BookingConfirmationModel> getBookingConfirmation(
+      String bookingId) async {
+    try {
+      final DocumentSnapshot snapshot = await bookingConfirmationsCollection
+          .doc(bookingId)
+          .get();
+
+      if (!snapshot.exists) {
+        throw ServerFailure(
+            'Booking confirmation not found for booking id: $bookingId');
+      }
+
+      return BookingConfirmationModel.fromJson(
+          snapshot.data() as Map<String, dynamic>);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<BookingConfirmationModel> setBookingConfirmation(
+      BookingConfirmationModel confirmation) async {
+    try {
+      await bookingConfirmationsCollection
+          .doc(confirmation.bookingId)
+          .set(confirmation.toJson());
+      return confirmation;
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+}
+================================================================================
+// FILE: ./lib/features/booking_confirmation/data/repositories/booking_confirmation_repository_impl.dart
+================================================================================
+
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
+import '../../domain/entities/booking_confirmation.dart';
+import '../../domain/repositories/booking_confirmation_repository.dart';
+import '../datasources/booking_confirmation_data_source.dart';
+import '../models/booking_confirmation_model.dart';
+
+class BookingConfirmationRepositoryImpl
+    implements BookingConfirmationRepository {
+  final BookingConfirmationDataSource dataSource;
+
+  BookingConfirmationRepositoryImpl({required this.dataSource});
+
+  @override
+  Future<Either<Failure, BookingConfirmation>> getBookingConfirmation(
+      String bookingId) async {
+    try {
+      final result = await dataSource.getBookingConfirmation(bookingId);
+      return Right(result);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, BookingConfirmation>> confirmBooking({
+    required String bookingId,
+    required String clientId,
+    required String professionalId,
+    required DateTime confirmedAt,
+  }) async {
+    try {
+      final model = BookingConfirmationModel(
+        bookingId: bookingId,
+        clientId: clientId,
+        professionalId: professionalId,
+        confirmedAt: confirmedAt,
+        isConfirmed: true,
+      );
+
+      final result = await dataSource.setBookingConfirmation(model);
+      return Right(result);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+}
+
+================================================================================
+// FILE: ./lib/features/booking_confirmation/data/models/booking_confirmation_model.dart
+================================================================================
+
+import '../../domain/entities/booking_confirmation.dart';
+
+class BookingConfirmationModel extends BookingConfirmation {
+  const BookingConfirmationModel({
+    required super.bookingId,
+    required super.clientId,
+    required super.professionalId,
+    required super.confirmedAt,
+    required super.isConfirmed,
+  });
+
+  factory BookingConfirmationModel.fromJson(Map<String, dynamic> json) {
+    return BookingConfirmationModel(
+      bookingId: json['bookingId'],
+      clientId: json['clientId'],
+      professionalId: json['professionalId'],
+      confirmedAt: DateTime.parse(json['confirmedAt']),
+      isConfirmed: json['isConfirmed'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'bookingId': bookingId,
+        'clientId': clientId,
+        'professionalId': professionalId,
+        'confirmedAt': confirmedAt.toIso8601String(),
+        'isConfirmed': isConfirmed,
+      };
+}
+
+================================================================================
+// FILE: ./lib/features/business_hours/domain/entities/business_hours.dart
+================================================================================
+
+import 'package:equatable/equatable.dart';
+
+class BusinessHours extends Equatable {
+  final String professionalId;
+  final List<String> workingDays; // e.g. ['Mon', 'Tue', 'Wed']
+  final String startTime; // e.g. '09:00'
+  final String endTime; // e.g. '18:00'
+  final List<Map<String, String>>
+      breaks; // e.g. [{'start': '12:00', 'end': '13:00'}]
+
+  const BusinessHours({
+    required this.professionalId,
+    required this.workingDays,
+    required this.startTime,
+    required this.endTime,
+    required this.breaks,
+  });
+
+  @override
+  List<Object?> get props => [
+        professionalId,
+        workingDays,
+        startTime,
+        endTime,
+        breaks,
+      ];
+}
+
+================================================================================
+// FILE: ./lib/features/business_hours/domain/usecases/set_business_hours.dart
+================================================================================
+
+// usecases/set_business_hours.dart
+import 'package:dartz/dartz.dart';
+import '../entities/business_hours.dart';
+import '../repositories/business_hours_repository.dart';
+import '../../../../core/error/failures.dart';
+
+class SetBusinessHours {
+  final BusinessHoursRepository repository;
+
+  SetBusinessHours(this.repository);
+
+  Future<Either<Failure, BusinessHours>> call(BusinessHours hours) async {
+    return await repository.setBusinessHours(hours);
+  }
+}
+
+
+
+================================================================================
+// FILE: ./lib/features/business_hours/domain/repositories/business_hours_repository.dart
+================================================================================
+
+// repositories/business_hours_repository.dart
+import 'package:dartz/dartz.dart';
+import '../entities/business_hours.dart';
+import '../../../../core/error/failures.dart';
+
+abstract class BusinessHoursRepository {
+  Future<Either<Failure, BusinessHours>> setBusinessHours(BusinessHours hours);
+  Future<Either<Failure, BusinessHours>> getBusinessHours(String professionalId);
+}
+
+
+
+================================================================================
+// FILE: ./lib/features/business_hours/data/datasources/firebase/business_hours_firestore.dart
+================================================================================
+
+import '../../../../../../../../../features/business_hours/data/models/business_hours_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+class BusinessHoursFirestoreDataSource {
+  final CollectionReference businessHoursCollection =
+  FirebaseFirestore.instance.collection('business_hours');
+
+  final FirebaseAuth firebaseAuth;
+
+  BusinessHoursFirestoreDataSource(
+      {required this.firebaseAuth});
+
+  // No Either<Failure, T> here (contrasts with repository)
+  Future<BusinessHoursModel> setBusinessHours(BusinessHoursModel businessHours) async {
+    final String professionalId = businessHours.professionalId;
+    final DocumentReference docRef = businessHoursCollection.doc(professionalId);
+    final DocumentSnapshot docSnapshot = await docRef.get();
+
+    if (docSnapshot.exists) {
+      // Update existing business hours
+      await docRef.update(businessHours.toJson());
+    } else {
+      // Create new business hours
+      await docRef.set(businessHours.toJson());
+    }
+
+    return businessHours;
+  }
+
+  Future<BusinessHoursModel> getBusinessHours(String professionalId) async {
+    final DocumentSnapshot snapshot =
+    await businessHoursCollection.doc(professionalId).get();
+
+    if (!snapshot.exists) {
+      throw Exception('Business hours not found for professional id: $professionalId');
+    }
+
+    return BusinessHoursModel.fromJson(snapshot.data() as Map<String, dynamic>);
+  }
+}
+================================================================================
+// FILE: ./lib/features/business_hours/data/repositories/business_hours_repository_impl.dart
+================================================================================
+
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
+import '../../domain/repositories/business_hours_repository.dart';
+import '../../domain/entities/business_hours.dart';
+import '../datasources/firebase/business_hours_firestore.dart';
+import '../models/business_hours_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+class BusinessHoursRepositoryImpl implements BusinessHoursRepository {
+  final BusinessHoursFirestoreDataSource firestoreDataSource;
+
+  BusinessHoursRepositoryImpl({required this.firestoreDataSource});
+
+  @override
+  Future<Either<Failure, BusinessHours>> setBusinessHours(
+      BusinessHours hours) async {
+    try {
+      final BusinessHoursModel model =
+          BusinessHoursModel.fromEntity(hours as BusinessHoursModel);
+      final result = await firestoreDataSource.setBusinessHours(model);
+      return Right(result);
+    } on FirebaseAuthException catch (e) {
+      return Left(AuthFailure(e.message ?? 'Authentication failed'));
+    } on FirebaseException catch (e) {
+      return Left(ServerFailure('Firestore error: ${e.message}'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, BusinessHours>> getBusinessHours(
+      String professionalId) async {
+    try {
+      final result = await firestoreDataSource.getBusinessHours(professionalId);
+      return Right(result);
+    } on FirebaseAuthException catch (_) {
+      return Left(const AuthFailure('Authentication error'));
+    } on FirebaseException catch (e) {
+      return Left(ServerFailure('Firestore error: ${e.message}'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+}
+================================================================================
+// FILE: ./lib/features/business_hours/data/models/business_hours_model.dart
+================================================================================
+
+import '../../domain/entities/business_hours.dart';
+
+class BusinessHoursModel extends BusinessHours {
+  const BusinessHoursModel({
+    required super.professionalId,
+    required super.workingDays,
+    required super.startTime,
+    required super.endTime,
+    required super.breaks,
+  });
+
+  /// ✅ Converts a domain entity into a data model
+  factory BusinessHoursModel.fromEntity(BusinessHours entity) {
+    return BusinessHoursModel(
+      professionalId: entity.professionalId,
+      workingDays: entity.workingDays,
+      startTime: entity.startTime,
+      endTime: entity.endTime,
+      breaks: entity.breaks,
+    );
+  }
+
+  /// ✅ Converts Firestore JSON into a model
+  factory BusinessHoursModel.fromJson(Map<String, dynamic> json) {
+    return BusinessHoursModel(
+      professionalId: json['professionalId'] ?? '',
+      workingDays: List<String>.from(json['workingDays'] ?? []),
+      startTime: json['startTime'] ?? '',
+      endTime: json['endTime'] ?? '',
+      breaks: (json['breaks'] as List?)
+              ?.map((b) => Map<String, String>.from(b))
+              .toList() ??
+          [],
+    );
+  }
+
+  /// ✅ Converts model into JSON for Firestore
+  Map<String, dynamic> toJson() {
+    return {
+      'professionalId': professionalId,
+      'workingDays': workingDays,
+      'startTime': startTime,
+      'endTime': endTime,
+      'breaks': breaks,
+    };
+  }
+}
+
+================================================================================
+// FILE: ./lib/features/user/domain/entities/user.dart
+================================================================================
+
+// entities/user.dart
+import 'package:equatable/equatable.dart';
+
+enum UserRole { client, professional }
+
+class User extends Equatable {
+  final String id;
+  final String name;
+  final String email;
+  final String? phone;
+  final UserRole role;
+
+  const User({
+    required this.id,
+    required this.name,
+    required this.email,
+    this.phone,
+    required this.role,
+  });
+
+  @override
+  List<Object?> get props => [id, name, email, phone, role];
+}
+
+================================================================================
+// FILE: ./lib/features/user/domain/usecases/sign_up_user.dart
+================================================================================
+
+// usecases/sign_up_user.dart
+import 'package:dartz/dartz.dart';
+import '../entities/user.dart';
+import '../../../../core/error/failures.dart';
+import '../repositories/user_repository.dart';
+
+class SignUpUser {
+  final UserRepository repository;
+
+  SignUpUser(this.repository);
+
+  Future<Either<Failure, User>> call({
+    required String name,
+    required String email,
+    required String password,
+    String? phone,
+    required UserRole role,
+  }) async {
+    return await repository.signUpUser(
+      name: name,
+      email: email,
+      password: password,
+      phone: phone,
+      role: role,
+    );
+  }
+}
+
+================================================================================
+// FILE: ./lib/features/user/domain/usecases/get_current_user.dart
+================================================================================
+
+import 'package:dartz/dartz.dart';
+import '../entities/user.dart';
+import '../../../../core/error/failures.dart';
+import '../repositories/user_repository.dart';
+
+// 3. Get Current User
+class GetCurrentUser {
+  final UserRepository repository;
+
+  GetCurrentUser(this.repository);
+
+  Future<Either<Failure, User>> call() {
+    return repository.getCurrentUser();
+  }
+}
+
+================================================================================
+// FILE: ./lib/features/user/domain/usecases/logout_user.dart
+================================================================================
+
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
+import '../repositories/user_repository.dart';
+
+// 4. Logout User
+class LogoutUser {
+  final UserRepository repository;
+
+  LogoutUser(this.repository);
+
+  Future<Either<Failure, void>> call() {
+    return repository.logoutUser();
+  }
+}
+
+================================================================================
+// FILE: ./lib/features/user/domain/usecases/login_user.dart
+================================================================================
+
+import 'package:dartz/dartz.dart';
+import '../entities/user.dart';
+import '../../../../core/error/failures.dart';
+import '../repositories/user_repository.dart';
+
+// 2. Login User
+class LoginUser {
+  final UserRepository repository;
+
+  LoginUser(this.repository);
+
+  Future<Either<Failure, User>> call({
+    required String email,
+    required String password,
+  }) {
+    return repository.loginUser(
+      email: email,
+      password: password,
+    );
+  }
+}
+
+================================================================================
+// FILE: ./lib/features/user/domain/repositories/user_repository.dart
+================================================================================
+
+// repositories/user_repository.dart
+import 'package:dartz/dartz.dart';
+import '../entities/user.dart';
+import '../../../../core/error/failures.dart';
+
+abstract class UserRepository {
+  Future<Either<Failure, User>> signUpUser({
+    required String name,
+    required String email,
+    required String password,
+    String? phone,
+    required UserRole role,
+  });
+
+  Future<Either<Failure, User>> loginUser({
+    required String email,
+    required String password,
+  });
+
+  Future<Either<Failure, User>> getCurrentUser();
+
+  Future<Either<Failure, void>> logoutUser();
+}
+
+================================================================================
+// FILE: ./lib/features/user/data/datasources/user/user_data_source.dart
+================================================================================
+
+import '../../../domain/entities/user.dart';
+import '../../models/user_model.dart';
+
+abstract class UserDataSource {
+  Future<UserModel> signUpUser({
+    required String name,
+    required String email,
+    required String password,
+    String? phone,
+    required UserRole role,
+  });
+
+  Future<UserModel> loginUser({
+    required String email,
+    required String password,
+  });
+
+  Future<UserModel> getCurrentUser();
+
+  Future<void> logoutUser();
+}
+================================================================================
+// FILE: ./lib/features/user/data/datasources/user/firebase_user_data_source.dart
+================================================================================
+
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import '../../../domain/entities/user.dart' as domain;
+import '../../models/user_model.dart';
+import 'user_data_source.dart';
+
+class FirebaseUserDataSource implements UserDataSource {
+  final firebase_auth.FirebaseAuth firebaseAuth;
+
+  FirebaseUserDataSource({required this.firebaseAuth});
+
+  @override
+  Future<UserModel> signUpUser({
+    required String name,
+    required String email,
+    required String password,
+    String? phone,
+    required domain.UserRole role,
+  }) async {
+    final firebase_auth.UserCredential userCredential =
+        await firebaseAuth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    await userCredential.user?.updateDisplayName(name);
+    final firebase_auth.User? user = userCredential.user;
+
+    if (user == null) {
+      throw firebase_auth.FirebaseAuthException(code: 'user-null');
+    }
+
+    return UserModel.fromFirebaseUser(user, role: role);
+  }
+
+  @override
+  Future<UserModel> loginUser({
+    required String email,
+    required String password,
+  }) async {
+    final firebase_auth.UserCredential userCredential =
+        await firebaseAuth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    final firebase_auth.User? user = userCredential.user;
+    if (user == null) {
+      throw firebase_auth.FirebaseAuthException(code: 'user-null');
+    }
+
+    return UserModel.fromFirebaseUser(user);
+  }
+
+  @override
+  Future<UserModel> getCurrentUser() async {
+    final firebase_auth.User? currentUser = firebaseAuth.currentUser;
+    if (currentUser == null) {
+      throw firebase_auth.FirebaseAuthException(code: 'no-user');
+    }
+
+    return UserModel.fromFirebaseUser(currentUser);
+  }
+
+  @override
+  Future<void> logoutUser() async {
+    await firebaseAuth.signOut();
+  }
+}
+
+================================================================================
+// FILE: ./lib/features/user/data/repositories/user_repository_impl.dart
+================================================================================
+
+import 'package:dartz/dartz.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import '../../../../core/error/failures.dart';
+import '../../domain/repositories/user_repository.dart';
+import '../../domain/entities/user.dart' as domain;
+import '../datasources/user/user_data_source.dart';
+import '../models/user_model.dart';
+
+class UserRepositoryImpl implements UserRepository {
+  final UserDataSource dataSource;
+
+  UserRepositoryImpl({required this.dataSource});
+
+  @override
+  Future<Either<Failure, domain.User>> signUpUser({
+    required String name,
+    required String email,
+    required String password,
+    String? phone,
+    required domain.UserRole role,
+  }) async {
+    try {
+      final UserModel userModel = await dataSource.signUpUser(
+        name: name,
+        email: email,
+        password: password,
+        phone: phone,
+        role: role,
+      );
+      return Right(userModel);
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      return Left(AuthFailure(e.message ?? 'Sign up failed'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, domain.User>> loginUser({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final UserModel userModel = await dataSource.loginUser(
+        email: email,
+        password: password,
+      );
+      return Right(userModel);
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      return Left(AuthFailure(e.message ?? 'Login failed'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, domain.User>> getCurrentUser() async {
+    try {
+      final UserModel userModel = await dataSource.getCurrentUser();
+      return Right(userModel);
+    } on firebase_auth.FirebaseAuthException catch (_) {
+      return Left(const AuthFailure('No user logged in'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> logoutUser() async {
+    try {
+      await dataSource.logoutUser();
+      return const Right(null);
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      return Left(AuthFailure(e.message ?? 'Logout failed'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+}
+
+================================================================================
+// FILE: ./lib/features/user/data/models/user_model.dart
+================================================================================
+
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import '../../domain/entities/user.dart';
+
+class UserModel extends User {
+  const UserModel({
+    required super.id,
+    required super.name,
+    required super.email,
+    required super.role,
+    super.phone,
+  });
+
+  factory UserModel.fromFirebaseUser(firebase_auth.User firebaseUser,
+      {UserRole? role}) {
+    return UserModel(
+      id: firebaseUser.uid,
+      name: firebaseUser.displayName ?? '',
+      email: firebaseUser.email ?? '',
+      phone: firebaseUser.phoneNumber,
+      role: role ?? UserRole.client,
+    );
+  }
+
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: json['id'],
+      name: json['name'],
+      email: json['email'],
+      phone: json['phone'],
+      role: UserRole.values.firstWhere(
+        (r) => r.toString() == 'UserRole.${json['role']}',
+        orElse: () => UserRole.client,
+      ),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'email': email,
+        'phone': phone,
+        'role': role.name,
+      };
+}
+
+================================================================================
+// FILE: ./lib/features/notification/domain/entities/notification.dart
+================================================================================
+
+// entities/notification.dart
+import 'package:equatable/equatable.dart';
+
+class BookingNotification extends Equatable {
+  final String id;
+  final String userId;
+  final String message;
+  final DateTime timestamp;
+
+  const BookingNotification({
+    required this.id,
+    required this.userId,
+    required this.message,
+    required this.timestamp,
+  });
+
+  @override
+  List<Object?> get props => [id, userId, message, timestamp];
+}
+
+
+
+================================================================================
+// FILE: ./lib/features/notification/domain/usecases/send_notification.dart
+================================================================================
+
+// usecases/send_booking_notification.dart
+import 'package:dartz/dartz.dart';
+import '../entities/notification.dart';
+import '../repositories/notification_repository.dart';
+import '../../../../core/error/failures.dart';
+
+class SendBookingNotification {
+  final NotificationRepository repository;
+
+  SendBookingNotification(this.repository);
+
+  Future<Either<Failure, BookingNotification>> call(
+    BookingNotification notification,
+  ) async {
+    return await repository.sendNotification(notification);
+  }
+}
+
+
+
+================================================================================
+// FILE: ./lib/features/notification/domain/repositories/notification_repository.dart
+================================================================================
+
+// repositories/notification_repository.dart
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
+import '../entities/notification.dart';
+
+abstract class NotificationRepository {
+  Future<Either<Failure, BookingNotification>> sendNotification(
+    BookingNotification notification,
+  );
+}
+
+
+
+================================================================================
+// FILE: ./lib/features/service/domain/entities/service.dart
+================================================================================
+
+// entities/service.dart
+import 'package:equatable/equatable.dart';
+
+class Service extends Equatable {
+  final String id;
+  final String professionalId;
+  final String name;
+  final int durationMinutes;
+  final double price;
+
+  const Service({
+    required this.id,
+    required this.professionalId,
+    required this.name,
+    required this.durationMinutes,
+    required this.price,
+  });
+
+  @override
+  List<Object?> get props => [id, professionalId, name, durationMinutes, price];
+}
+
+
+
+================================================================================
+// FILE: ./lib/features/service/domain/usecases/get_services.dart
+================================================================================
+
+// usecases/get_services.dart
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
+import '../entities/service.dart';
+import '../repositories/service_repository.dart';
+
+class GetServices {
+  final ServiceRepository repository;
+
+  GetServices(this.repository);
+
+  Future<Either<Failure, List<Service>>> call(String professionalId) async {
+    return await repository.getServices(professionalId);
+  }
+}
+
+
+
+================================================================================
+// FILE: ./lib/features/service/domain/usecases/add_services.dart
+================================================================================
+
+// usecases/add_service.dart
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
+import '../entities/service.dart';
+import '../repositories/service_repository.dart';
+
+class AddService {
+  final ServiceRepository repository;
+
+  AddService(this.repository);
+
+  Future<Either<Failure, Service>> call(Service service) async {
+    return await repository.addService(service);
+  }
+}
+
+
+
+================================================================================
+// FILE: ./lib/features/service/domain/usecases/remove_services.dart
+================================================================================
+
+// usecases/remove_service.dart
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
+import '../repositories/service_repository.dart';
+
+class RemoveService {
+  final ServiceRepository repository;
+
+  RemoveService(this.repository);
+
+  Future<Either<Failure, void>> call(String serviceId) async {
+    return await repository.removeService(serviceId);
+  }
+}
+
+
+
+================================================================================
+// FILE: ./lib/features/service/domain/repositories/service_repository.dart
+================================================================================
+
+// repositories/service_repository.dart
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
+import '../entities/service.dart';
+
+abstract class ServiceRepository {
+  Future<Either<Failure, Service>> addService(Service service);
+  Future<Either<Failure, List<Service>>> getServices(String professionalId);
+  Future<Either<Failure, void>> removeService(String serviceId);
+}
+
+
+
+================================================================================
+// FILE: ./lib/features/service/data/datasources/service_data_source.dart
+================================================================================
+
+import '../models/service_model.dart';
+
+abstract class ServiceDataSource {
+  Future<ServiceModel> addService(ServiceModel service);
+  Future<List<ServiceModel>> getServices(String professionalId);
+  Future<void> removeService(String serviceId);
+}
+================================================================================
+// FILE: ./lib/features/service/data/datasources/firebase/firebase_service_data_source.dart
+================================================================================
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../../../../../core/error/failures.dart';
+import '../../models/service_model.dart';
+import '../service_data_source.dart';
+
+class FirebaseServiceDataSource implements ServiceDataSource {
+  final CollectionReference servicesCollection = FirebaseFirestore.instance.collection('services');
+
+  @override
+  Future<ServiceModel> addService(ServiceModel service) async {
+    try {
+      final documentReference = await servicesCollection.add(service.toJson());
+      final snapshot = await documentReference.get();
+      return ServiceModel.fromJson(snapshot.data() as Map<String, dynamic>);
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<List<ServiceModel>> getServices(String professionalId) async {
+    try {
+      final querySnapshot = await servicesCollection.where('professionalId', isEqualTo: professionalId).get();
+      return querySnapshot.docs
+          .map((doc) => ServiceModel.fromJson(doc.data() as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+
+  @override
+  Future<void> removeService(String serviceId) async {
+    try {
+      await servicesCollection.doc(serviceId).delete();
+    } catch (e) {
+      throw ServerFailure(e.toString());
+    }
+  }
+}
+================================================================================
+// FILE: ./lib/features/service/data/repositories/service_repository_impl.dart
+================================================================================
+
+import 'package:dartz/dartz.dart';
+
+import '../../../../core/error/failures.dart';
+import '../../domain/entities/service.dart';
+import '../../domain/repositories/service_repository.dart';
+import '../datasources/service_data_source.dart';
+import '../models/service_model.dart';
+
+class ServiceRepositoryImpl implements ServiceRepository {
+  final ServiceDataSource dataSource;
+
+  ServiceRepositoryImpl({required this.dataSource});
+
+  @override
+  Future<Either<Failure, Service>> addService(Service service) async {
+    try {
+      final serviceModel = ServiceModel.fromEntity(service);
+      final result = await dataSource.addService(serviceModel);
+      return Right(result);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Service>>> getServices(String professionalId) async {
+    try {
+      final result = await dataSource.getServices(professionalId);
+      return Right(result);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> removeService(String serviceId) async {
+    try {
+      await dataSource.removeService(serviceId);
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
+}
+================================================================================
+// FILE: ./lib/features/service/data/models/service_model.dart
+================================================================================
+
+import '../../domain/entities/service.dart';
+
+class ServiceModel extends Service {
+  const ServiceModel({
+    required super.id,
+    required super.professionalId,
+    required super.name,
+    required super.durationMinutes,
+    required super.price,
+  });
+
+  factory ServiceModel.fromEntity(Service service) {
+    return ServiceModel(
+      id: service.id,
+      professionalId: service.professionalId,
+      name: service.name,
+      durationMinutes: service.durationMinutes,
+      price: service.price,
+    );
+  }
+
+  factory ServiceModel.fromJson(Map<String, dynamic> json) {
+    return ServiceModel(
+      id: json['id'],
+      professionalId: json['professionalId'],
+      name: json['name'],
+      durationMinutes: json['durationMinutes'],
+      price: (json['price'] as num).toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'professionalId': professionalId,
+      'name': name,
+      'durationMinutes': durationMinutes,
+      'price': price,
+    };
+  }
+}
+
+================================================================================
+// FILE: ./lib/features/professional/domain/entities/professional.dart
+================================================================================
+
+// entities/professional.dart
+import 'package:equatable/equatable.dart';
+
+class Professional extends Equatable {
+  final String id;
+  final String businessName;
+  final String? logoUrl;
+
+  const Professional({
+    required this.id,
+    required this.businessName,
+    this.logoUrl,
+  });
+
+  @override
+  List<Object?> get props => [id, businessName, logoUrl];
+}
+
+
+
+================================================================================
+// FILE: ./lib/core/error/failures.dart
+================================================================================
+
+import 'package:equatable/equatable.dart';
+
+abstract class Failure extends Equatable {
+  final String message;
+
+  const Failure(this.message);
+
+  @override
+  List<Object?> get props => [message];
+}
+
+// Examples of specific failures
+class AuthFailure extends Failure {
+  const AuthFailure(super.message);
+}
+
+class NetworkFailure extends Failure {
+  const NetworkFailure(super.message);
+}
+
+class ServerFailure extends Failure {
+  const ServerFailure(super.message);
+}
