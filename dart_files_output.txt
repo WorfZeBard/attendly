@@ -1,70 +1,57 @@
 
 ================================================================================
+// FILE: ./scripts/seed_booking_confirmations.dart
+================================================================================
+
+// scripts/seed_booking_confirmations.dart
+import 'package:attendly/firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+Future<void> main() async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  final firestore = FirebaseFirestore.instance;
+
+  final confirmationsRef = firestore.collection('bookingConfirmations');
+
+  final confirmationData = {
+    'bookingId': 'booking_987',
+    'clientId': 'client_456',
+    'professionalId': 'prof_123',
+    'confirmedAt': DateTime.now().toIso8601String(),
+    'isConfirmed': true,
+  };
+
+  await confirmationsRef.doc('booking_987').set(confirmationData);
+  print('✅ Seeded one booking confirmation.');
+}
+
+================================================================================
 // FILE: ./scripts/seed_services.dart
 ================================================================================
 
 // scripts/seed_services.dart
-import 'package:attendly/features/service/data/datasources/firebase/firebase_service_data_source.dart';
-import 'package:attendly/features/service/data/models/service_model.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:attendly/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-void main() async {
+Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  final serviceDataSource = FirebaseServiceDataSource();
+  final docRef = await FirebaseFirestore.instance.collection('services').add({
+    'id': '',
+    'professionalId': 'prof_123',
+    'name': 'Haircut',
+    'durationMinutes': 45,
+    'price': 50.0,
+  });
 
-  // Sample Service Data for UAT - Associate with known professional IDs
-  final List<Map<String, dynamic>> sampleServices = [
-    {
-      'professionalId':
-          'PROFESSIONAL_ID_1', // Replace with actual seeded professional ID
-      'name': 'Haircut',
-      'durationMinutes': 30,
-      'price': 25.0,
-    },
-    {
-      'professionalId': 'PROFESSIONAL_ID_1',
-      'name': 'Haircut & Beard Trim',
-      'durationMinutes': 45,
-      'price': 40.0,
-    },
-    {
-      'professionalId': 'PROFESSIONAL_ID_2',
-      'name': 'Basic Massage',
-      'durationMinutes': 60,
-      'price': 60.0,
-    },
-    {
-      'professionalId': 'PROFESSIONAL_ID_2',
-      'name': 'Deep Tissue Massage',
-      'durationMinutes': 90,
-      'price': 90.0,
-    },
-  ];
+  // Update with real ID
+  await docRef.update({'id': docRef.id});
 
-  for (final serviceData in sampleServices) {
-    try {
-      print(
-          'Creating service: ${serviceData['name']} for professional ${serviceData['professionalId']}');
-      final service = ServiceModel(
-        id: '', // Firestore will auto-generate
-        professionalId: serviceData['professionalId'] as String,
-        name: serviceData['name'] as String,
-        durationMinutes: serviceData['durationMinutes'] as int,
-        price: serviceData['price'] as double,
-      );
-
-      await serviceDataSource.addService(service);
-      print('Successfully created service: ${serviceData['name']}');
-    } catch (e) {
-      print('Error creating service ${serviceData['name']}: $e');
-    }
-  }
-
-  print('Service seeding completed.');
+  print('✅ Seeded service with ID: ${docRef.id}');
 }
 
 ================================================================================
@@ -72,218 +59,62 @@ void main() async {
 ================================================================================
 
 // scripts/seed_business_hours.dart
-import 'package:attendly/features/business_hours/data/datasources/firebase/business_hours_firestore.dart';
-import 'package:attendly/features/business_hours/data/models/business_hours_model.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:attendly/firebase_options.dart';
-
-void main() async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  // IMPORTANT: This script requires an authenticated user context.
-  // For UAT seeding, you might need to authenticate as the professional
-  // whose business hours you are setting, or use an admin account with
-  // appropriate permissions if your security rules allow it.
-  // This example assumes a default (potentially unauthenticated) context
-  // which might fail depending on your Firestore rules.
-  // You might need to sign in as the specific user first or use Admin SDK.
-  final auth = FirebaseAuth.instance;
-
-  // Example: Sign in as a specific user (replace with actual credentials)
-  // try {
-  //   await auth.signInWithEmailAndPassword(
-  //     email: 'uat_prof1@example.com',
-  //     password: 'TempPass123!',
-  //   );
-  // } catch (e) {
-  //   print("Error signing in for business hours seeding: $e");
-  //   return; // Exit if authentication fails
-  // }
-
-  final businessHoursDataSource =
-      BusinessHoursFirestoreDataSource(firebaseAuth: auth);
-
-  // Sample Business Hours Data for UAT - Associate with known professional IDs
-  final List<Map<String, dynamic>> sampleBusinessHours = [
-    {
-      'professionalId':
-          'PROFESSIONAL_ID_1', // Replace with actual seeded professional ID
-      'workingDays': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
-      'startTime': '09:00',
-      'endTime': '17:00',
-      'breaks': [
-        {'start': '12:00', 'end': '13:00'}
-      ],
-    },
-    {
-      'professionalId': 'PROFESSIONAL_ID_2',
-      'workingDays': ['Tue', 'Wed', 'Thu', 'Sat'],
-      'startTime': '10:00',
-      'endTime': '19:00',
-      'breaks': [
-        {'start': '14:30', 'end': '15:00'},
-        {'start': '17:00', 'end': '17:30'}
-      ],
-    },
-  ];
-
-  for (final hoursData in sampleBusinessHours) {
-    try {
-      print(
-          'Setting business hours for professional: ${hoursData['professionalId']}');
-      final businessHours = BusinessHoursModel(
-        professionalId: hoursData['professionalId'] as String,
-        workingDays: List<String>.from(hoursData['workingDays'] as List),
-        startTime: hoursData['startTime'] as String,
-        endTime: hoursData['endTime'] as String,
-        breaks: List<Map<String, String>>.from((hoursData['breaks'] as List)
-            .map((b) => Map<String, String>.from(b))),
-      );
-
-      await businessHoursDataSource.setBusinessHours(businessHours);
-      print(
-          'Successfully set business hours for professional: ${hoursData['professionalId']}');
-    } catch (e) {
-      print(
-          'Error setting business hours for ${hoursData['professionalId']}: $e');
-    }
-  }
-
-  print('Business hours seeding completed.');
-}
-
-================================================================================
-// FILE: ./scripts/seed_booking_confirmation.dart
-================================================================================
-
-// scripts/seed_booking_confirmations.dart
-import 'package:attendly/features/booking_confirmation/data/datasources/firebase/firebase_booking_confirmation_data_source.dart';
-import 'package:attendly/features/booking_confirmation/data/models/booking_confirmation_model.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:attendly/firebase_options.dart';
-
-void main() async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  final confirmationDataSource = FirebaseBookingConfirmationDataSource();
-
-  // Sample Booking Confirmation Data for UAT - Use known Booking, Client, and Professional IDs
-  final List<Map<String, dynamic>> sampleConfirmations = [
-    {
-      'bookingId': 'BOOKING_ID_1', // Replace with actual seeded booking ID
-      'clientId': 'CLIENT_ID_1', // Replace with corresponding client ID
-      'professionalId':
-          'PROFESSIONAL_ID_1', // Replace with corresponding professional ID
-      'confirmedAt': DateTime.now(), // Current timestamp
-      'isConfirmed': true, // Or false for declined
-    },
-    {
-      'bookingId': 'BOOKING_ID_2',
-      'clientId': 'CLIENT_ID_1',
-      'professionalId': 'PROFESSIONAL_ID_2',
-      'confirmedAt':
-          DateTime.now().subtract(Duration(minutes: 30)), // 30 mins ago
-      'isConfirmed': true,
-    },
-  ];
-
-  for (final confirmData in sampleConfirmations) {
-    try {
-      print(
-          'Creating booking confirmation for booking: ${confirmData['bookingId']}');
-      final confirmation = BookingConfirmationModel(
-        bookingId: confirmData['bookingId'] as String,
-        clientId: confirmData['clientId'] as String,
-        professionalId: confirmData['professionalId'] as String,
-        confirmedAt: confirmData['confirmedAt'] as DateTime,
-        isConfirmed: confirmData['isConfirmed'] as bool,
-      );
-
-      await confirmationDataSource.setBookingConfirmation(confirmation);
-      print(
-          'Successfully created booking confirmation for booking: ${confirmData['bookingId']}');
-    } catch (e) {
-      print(
-          'Error creating booking confirmation for booking ${confirmData['bookingId']}: $e');
-    }
-  }
-
-  print('Booking confirmation seeding completed.');
-}
-
-================================================================================
-// FILE: ./scripts/seed_users.dart
-================================================================================
-
-// scripts/seed_users.dart
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:attendly/firebase_options.dart';
 
-void main() async {
-  // No WidgetsFlutterBinding here — this is not a UI Flutter app
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  final auth = FirebaseAuth.instance;
+Future<void> main() async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final firestore = FirebaseFirestore.instance;
 
-  final List<Map<String, dynamic>> sampleUsers = [
-    {
-      'name': 'UAT Client 1',
-      'email': 'uat_client1@example.com',
-      'password': 'TempPass123!',
-      'phone': '+12345678901',
-      'role': 'client',
-    },
-    {
-      'name': 'UAT Professional 1',
-      'email': 'uat_prof1@example.com',
-      'password': 'TempPass123!',
-      'phone': '+12345678902',
-      'role': 'professional',
-    },
-    {
-      'name': 'UAT Professional 2',
-      'email': 'uat_prof2@example.com',
-      'password': 'TempPass123!',
-      'phone': '+12345678903',
-      'role': 'professional',
-    },
-  ];
+  final businessHoursRef = firestore.collection('business_hours');
 
-  for (final userData in sampleUsers) {
-    try {
-      print('Creating user: ${userData['email']}');
+  final hoursData = {
+    'professionalId': 'prof_123',
+    'workingDays': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+    'startTime': '09:00',
+    'endTime': '18:00',
+    'breaks': [
+      {'start': '12:00', 'end': '13:00'}
+    ],
+  };
 
-      final credential = await auth.createUserWithEmailAndPassword(
-        email: userData['email']!,
-        password: userData['password']!,
-      );
+  await businessHoursRef.doc('prof_123').set(hoursData);
+  print('✅ Seeded business hours for prof_123.');
+}
 
-      await firestore.collection('users').doc(credential.user!.uid).set({
-        'name': userData['name'],
-        'email': userData['email'],
-        'phone': userData['phone'],
-        'role': userData['role'],
-        'createdBy': 'uat-seed-script',
-      });
+================================================================================
+// FILE: ./scripts/seed_auth_users.dart
+================================================================================
 
-      print('Successfully created user: ${userData['email']}');
-    } catch (e) {
-      print('Error creating user ${userData['email']}: $e');
-    }
+// scripts/seed_auth_users.dart
+import 'package:attendly/firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+Future<void> main() async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  final auth = FirebaseAuth.instance;
+
+  try {
+    await auth.createUserWithEmailAndPassword(
+      email: 'test.professional@example.com',
+      password: 'password123',
+    );
+    print('✅ Created test professional user.');
+  } catch (e) {
+    print('⚠️ User may already exist: $e');
   }
 
-  print('User seeding completed.');
+  try {
+    await auth.createUserWithEmailAndPassword(
+      email: 'test.client@example.com',
+      password: 'password123',
+    );
+    print('✅ Created test client user.');
+  } catch (e) {
+    print('⚠️ User may already exist: $e');
+  }
 }
 
 ================================================================================
@@ -291,84 +122,43 @@ void main() async {
 ================================================================================
 
 // scripts/seed_bookings.dart
-import 'package:attendly/features/booking/data/datasources/firebase/firebase_booking_data_source.dart';
-import 'package:attendly/features/booking/data/models/booking_model.dart';
+import 'package:attendly/firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:attendly/firebase_options.dart';
 
-void main() async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  // IMPORTANT: This script requires an authenticated user context.
-  // The 'createdById' will be set to the currently authenticated user's ID.
-  // For UAT seeding, you might need to authenticate as a specific user
-  // (e.g., an admin or the client making the booking) or use an admin account
-  // if your security rules permit it.
-  // This example assumes a default (potentially unauthenticated) context
-  // which might fail depending on your Firestore rules.
-  // You might need to sign in as the specific user first or use Admin SDK.
+Future<void> main() async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final auth = FirebaseAuth.instance;
+  final firestore = FirebaseFirestore.instance;
 
-  // Example: Sign in as a client user (replace with actual credentials)
-  // try {
-  //   await auth.signInWithEmailAndPassword(
-  //     email: 'uat_client1@example.com',
-  //     password: 'TempPass123!',
-  //   );
-  // } catch (e) {
-  //   print("Error signing in for booking seeding: $e");
-  //   return; // Exit if authentication fails
-  // }
-
-  final bookingDataSource = FirebaseBookingDataSource(firebaseAuth: auth);
-
-  // Sample Booking Data for UAT - Use known Client and Professional IDs
-  final List<Map<String, dynamic>> sampleBookings = [
-    {
-      'clientId': 'CLIENT_ID_1', // Replace with actual seeded client ID
-      'professionalId':
-          'PROFESSIONAL_ID_1', // Replace with actual seeded professional ID
-      'dateTime':
-          DateTime.now().add(Duration(days: 1, hours: 10)), // Tomorrow at 10 AM
-    },
-    {
-      'clientId': 'CLIENT_ID_1',
-      'professionalId': 'PROFESSIONAL_ID_2',
-      'dateTime': DateTime.now()
-          .add(Duration(days: 2, hours: 15)), // Day after tomorrow at 3 PM
-    },
-    {
-      'clientId': 'ANOTHER_CLIENT_ID', // Replace with another seeded client ID
-      'professionalId': 'PROFESSIONAL_ID_1',
-      'dateTime': DateTime.now()
-          .add(Duration(days: 3, hours: 11)), // In 3 days at 11 AM
-    },
-  ];
-
-  for (final bookingData in sampleBookings) {
-    try {
-      print(
-          'Creating booking for client ${bookingData['clientId']} with professional ${bookingData['professionalId']} at ${bookingData['dateTime']}');
-      final booking = BookingModel(
-        id: '', // Firestore will auto-generate
-        clientId: bookingData['clientId'] as String,
-        professionalId: bookingData['professionalId'] as String,
-        dateTime: bookingData['dateTime'] as DateTime,
-      );
-
-      await bookingDataSource.createBookingModel(booking);
-      print(
-          'Successfully created booking for professional: ${bookingData['professionalId']}');
-    } catch (e) {
-      print(
-          'Error creating booking for professional ${bookingData['professionalId']}: $e');
-    }
+  // Sign in a test user (replace with real test email/password if needed)
+  UserCredential? userCredential;
+  try {
+    userCredential = await auth.signInAnonymously();
+    print('Signed in as: ${userCredential.user!.uid}');
+  } catch (e) {
+    print('Auth error: $e');
+    return;
   }
 
-  print('Booking seeding completed.');
+  final userId = userCredential.user!.uid;
+
+  final bookingsRef = firestore.collection('bookings');
+
+  // Sample booking
+  final bookingData = {
+    'id': bookingsRef.doc().id,
+    'clientId': userId,
+    'professionalId': 'prof_123',
+    'dateTime': DateTime(2025, 12, 10, 15, 30).toIso8601String(),
+    'createdById': userId,
+    'createdOn': FieldValue.serverTimestamp(),
+    'status': 'pending',
+  };
+
+  await bookingsRef.add(bookingData);
+  print('✅ Seeded one booking.');
 }
 
 ================================================================================
@@ -394,6 +184,83 @@ void registerPlugins([final Registrar? pluginRegistrar]) {
   FirebaseAuthWeb.registerWith(registrar);
   FirebaseCoreWeb.registerWith(registrar);
   registrar.registerMessageHandler();
+}
+
+================================================================================
+// FILE: ./.dart_tool/flutter_build/dart_plugin_registrant.dart
+================================================================================
+
+//
+// Generated file. Do not edit.
+// This file is generated from template in file `flutter_tools/lib/src/flutter_plugins.dart`.
+//
+
+// @dart = 3.0
+
+import 'dart:io'; // flutter_ignore: dart_io_import.
+import 'package:path_provider_android/path_provider_android.dart';
+import 'package:path_provider_foundation/path_provider_foundation.dart';
+import 'package:path_provider_linux/path_provider_linux.dart';
+import 'package:path_provider_foundation/path_provider_foundation.dart';
+import 'package:path_provider_windows/path_provider_windows.dart';
+
+@pragma('vm:entry-point')
+class _PluginRegistrant {
+
+  @pragma('vm:entry-point')
+  static void register() {
+    if (Platform.isAndroid) {
+      try {
+        PathProviderAndroid.registerWith();
+      } catch (err) {
+        print(
+          '`path_provider_android` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+    } else if (Platform.isIOS) {
+      try {
+        PathProviderFoundation.registerWith();
+      } catch (err) {
+        print(
+          '`path_provider_foundation` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+    } else if (Platform.isLinux) {
+      try {
+        PathProviderLinux.registerWith();
+      } catch (err) {
+        print(
+          '`path_provider_linux` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+    } else if (Platform.isMacOS) {
+      try {
+        PathProviderFoundation.registerWith();
+      } catch (err) {
+        print(
+          '`path_provider_foundation` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+    } else if (Platform.isWindows) {
+      try {
+        PathProviderWindows.registerWith();
+      } catch (err) {
+        print(
+          '`path_provider_windows` threw an error: $err. '
+          'The app may not function as expected until you remove this plugin from pubspec.yaml'
+        );
+      }
+
+    }
+  }
 }
 
 ================================================================================
