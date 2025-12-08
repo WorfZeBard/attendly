@@ -1,80 +1,42 @@
-// scripts/seed_bookings.dart
-import 'package:attendly/features/booking/data/datasources/firebase/firebase_booking_data_source.dart';
-import 'package:attendly/features/booking/data/models/booking_model.dart';
+// scripts/seed_bookings.dart (updated version)
+import 'package:attendly/firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:attendly/firebase_options.dart';
+import 'package:flutter/widgets.dart';
 
-void main() async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  // IMPORTANT: This script requires an authenticated user context.
-  // The 'createdById' will be set to the currently authenticated user's ID.
-  // For UAT seeding, you might need to authenticate as a specific user
-  // (e.g., an admin or the client making the booking) or use an admin account
-  // if your security rules permit it.
-  // This example assumes a default (potentially unauthenticated) context
-  // which might fail depending on your Firestore rules.
-  // You might need to sign in as the specific user first or use Admin SDK.
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   final auth = FirebaseAuth.instance;
+  final firestore = FirebaseFirestore.instance;
 
-  // Example: Sign in as a client user (replace with actual credentials)
-  // try {
-  //   await auth.signInWithEmailAndPassword(
-  //     email: 'uat_client1@example.com',
-  //     password: 'TempPass123!',
-  //   );
-  // } catch (e) {
-  //   print("Error signing in for booking seeding: $e");
-  //   return; // Exit if authentication fails
-  // }
-
-  final bookingDataSource = FirebaseBookingDataSource(firebaseAuth: auth);
-
-  // Sample Booking Data for UAT - Use known Client and Professional IDs
-  final List<Map<String, dynamic>> sampleBookings = [
-    {
-      'clientId': 'CLIENT_ID_1', // Replace with actual seeded client ID
-      'professionalId':
-          'PROFESSIONAL_ID_1', // Replace with actual seeded professional ID
-      'dateTime':
-          DateTime.now().add(Duration(days: 1, hours: 10)), // Tomorrow at 10 AM
-    },
-    {
-      'clientId': 'CLIENT_ID_1',
-      'professionalId': 'PROFESSIONAL_ID_2',
-      'dateTime': DateTime.now()
-          .add(Duration(days: 2, hours: 15)), // Day after tomorrow at 3 PM
-    },
-    {
-      'clientId': 'ANOTHER_CLIENT_ID', // Replace with another seeded client ID
-      'professionalId': 'PROFESSIONAL_ID_1',
-      'dateTime': DateTime.now()
-          .add(Duration(days: 3, hours: 11)), // In 3 days at 11 AM
-    },
-  ];
-
-  for (final bookingData in sampleBookings) {
-    try {
-      print(
-          'Creating booking for client ${bookingData['clientId']} with professional ${bookingData['professionalId']} at ${bookingData['dateTime']}');
-      final booking = BookingModel(
-        id: '', // Firestore will auto-generate
-        clientId: bookingData['clientId'] as String,
-        professionalId: bookingData['professionalId'] as String,
-        dateTime: bookingData['dateTime'] as DateTime,
-      );
-
-      await bookingDataSource.createBookingModel(booking);
-      print(
-          'Successfully created booking for professional: ${bookingData['professionalId']}');
-    } catch (e) {
-      print(
-          'Error creating booking for professional ${bookingData['professionalId']}: $e');
-    }
+  // Sign in as existing test client
+  UserCredential userCredential;
+  try {
+    userCredential = await auth.signInWithEmailAndPassword(
+      email: 'test.client@example.com',
+      password: 'password123',
+    );
+    print('Signed in as client: ${userCredential.user!.uid}');
+  } catch (e) {
+    print('⚠️ Could not sign in client: $e');
+    return;
   }
 
-  print('Booking seeding completed.');
+  final userId = userCredential.user!.uid;
+  final bookingsRef = firestore.collection('bookings');
+
+  final bookingData = {
+    'id': 'booking_987',
+    'clientId': 'client_456', // or userId if you store UID directly
+    'professionalId': 'prof_123',
+    'dateTime': DateTime(2025, 12, 10, 15, 30).toIso8601String(),
+    'createdById': userId,
+    'createdOn': FieldValue.serverTimestamp(),
+    'status': 'pending',
+  };
+
+  await bookingsRef.doc('booking_987').set(bookingData);
+  print('✅ Seeded booking: booking_987');
 }
