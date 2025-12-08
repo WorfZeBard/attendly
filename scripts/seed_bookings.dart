@@ -3,12 +3,20 @@ import 'package:attendly/features/booking/data/datasources/firebase/firebase_boo
 import 'package:attendly/features/booking/data/models/booking_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:attendly/firebase_options.dart';
+
+// ✅ Hardcode Firebase options (use your web config from firebase_options.dart)
+final FirebaseOptions firebaseOptions = FirebaseOptions(
+  apiKey: "AIzaSyDlgiogIv8a4104nT8pHOhejGJXcuAL44E",
+  authDomain: "attendly-dd63f.firebaseapp.com",
+  projectId: "attendly-dd63f",
+  storageBucket: "attendly-dd63f.firebasestorage.app",
+  messagingSenderId: "1099496840630",
+  appId: "1:1099496840630:web:577b8d77949d19b160f517",
+  measurementId: "G-N46G08LV8P",
+);
 
 void main() async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: firebaseOptions);
 
   final auth = FirebaseAuth.instance;
 
@@ -27,19 +35,19 @@ void main() async {
   final bookingDataSource = FirebaseBookingDataSource(firebaseAuth: auth);
 
   // 👉 REPLACE with real IDs from seed_users.dart
-  const String CLIENT_ID_1 = 'CLIENT_ID_1';
-  const String PROFESSIONAL_ID_1 = 'PROFESSIONAL_ID_1';
-  const String PROFESSIONAL_ID_2 = 'PROFESSIONAL_ID_2';
+  const String clientId1 = 'CLIENT_ID_1';
+  const String professionalId1 = 'PROFESSIONAL_ID_1';
+  const String professionalId2 = 'PROFESSIONAL_ID_2';
 
   final List<Map<String, dynamic>> sampleBookings = [
     {
-      'clientId': CLIENT_ID_1,
-      'professionalId': PROFESSIONAL_ID_1,
+      'clientId': clientId1,
+      'professionalId': professionalId1,
       'dateTime': DateTime.now().add(const Duration(days: 1, hours: 10)),
     },
     {
-      'clientId': CLIENT_ID_1,
-      'professionalId': PROFESSIONAL_ID_2,
+      'clientId': clientId1,
+      'professionalId': professionalId2,
       'dateTime': DateTime.now().add(const Duration(days: 2, hours: 15)),
     },
   ];

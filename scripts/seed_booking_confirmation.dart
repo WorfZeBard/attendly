@@ -2,35 +2,42 @@
 import 'package:attendly/features/booking_confirmation/data/datasources/firebase/firebase_booking_confirmation_data_source.dart';
 import 'package:attendly/features/booking_confirmation/data/models/booking_confirmation_model.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:attendly/firebase_options.dart';
+
+// ✅ Hardcode Firebase options (use your web config from firebase_options.dart)
+final FirebaseOptions firebaseOptions = FirebaseOptions(
+  apiKey: "AIzaSyDlgiogIv8a4104nT8pHOhejGJXcuAL44E",
+  authDomain: "attendly-dd63f.firebaseapp.com",
+  projectId: "attendly-dd63f",
+  storageBucket: "attendly-dd63f.firebasestorage.app",
+  messagingSenderId: "1099496840630",
+  appId: "1:1099496840630:web:577b8d77949d19b160f517",
+  measurementId: "G-N46G08LV8P",
+);
 
 void main() async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
+  await Firebase.initializeApp(options: firebaseOptions);
   final confirmationDataSource = FirebaseBookingConfirmationDataSource();
 
   // 👉 You must replace these with real booking IDs after running seed_bookings.dart
   // For now, we simulate using placeholder IDs and current time
-  const String BOOKING_ID_1 = 'BOOKING_ID_1';
-  const String BOOKING_ID_2 = 'BOOKING_ID_2';
-  const String CLIENT_ID_1 = 'CLIENT_ID_1';
-  const String PROFESSIONAL_ID_1 = 'PROFESSIONAL_ID_1';
-  const String PROFESSIONAL_ID_2 = 'PROFESSIONAL_ID_2';
+  const String bookingId1 = 'BOOKING_ID_1';
+  const String bookingId2 = 'BOOKING_ID_2';
+  const String clientId1 = 'CLIENT_ID_1';
+  const String professionalId1 = 'PROFESSIONAL_ID_1';
+  const String professionalId2 = 'PROFESSIONAL_ID_2';
 
   final List<Map<String, dynamic>> sampleConfirmations = [
     {
-      'bookingId': BOOKING_ID_1,
-      'clientId': CLIENT_ID_1,
-      'professionalId': PROFESSIONAL_ID_1,
+      'bookingId': bookingId1,
+      'clientId': clientId1,
+      'professionalId': professionalId1,
       'confirmedAt': DateTime.now(),
       'isConfirmed': true,
     },
     {
-      'bookingId': BOOKING_ID_2,
-      'clientId': CLIENT_ID_1,
-      'professionalId': PROFESSIONAL_ID_2,
+      'bookingId': bookingId2,
+      'clientId': clientId1,
+      'professionalId': professionalId2,
       'confirmedAt': DateTime.now().subtract(const Duration(minutes: 30)),
       'isConfirmed': true,
     },

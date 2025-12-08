@@ -2,12 +2,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:attendly/firebase_options.dart';
+
+// ✅ Hardcode Firebase options (use your web config from firebase_options.dart)
+final FirebaseOptions firebaseOptions = FirebaseOptions(
+  apiKey: "AIzaSyDlgiogIv8a4104nT8pHOhejGJXcuAL44E",
+  authDomain: "attendly-dd63f.firebaseapp.com",
+  projectId: "attendly-dd63f",
+  storageBucket: "attendly-dd63f.firebasestorage.app",
+  messagingSenderId: "1099496840630",
+  appId: "1:1099496840630:web:577b8d77949d19b160f517",
+  measurementId: "G-N46G08LV8P",
+);
 
 void main() async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: firebaseOptions);
 
   final auth = FirebaseAuth.instance;
   final firestore = FirebaseFirestore.instance;

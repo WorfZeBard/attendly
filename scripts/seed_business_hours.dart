@@ -3,12 +3,20 @@ import 'package:attendly/features/business_hours/data/datasources/firebase/busin
 import 'package:attendly/features/business_hours/data/models/business_hours_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:attendly/firebase_options.dart';
+
+// ✅ Hardcode Firebase options (use your web config from firebase_options.dart)
+final FirebaseOptions firebaseOptions = FirebaseOptions(
+  apiKey: "AIzaSyDlgiogIv8a4104nT8pHOhejGJXcuAL44E",
+  authDomain: "attendly-dd63f.firebaseapp.com",
+  projectId: "attendly-dd63f",
+  storageBucket: "attendly-dd63f.firebasestorage.app",
+  messagingSenderId: "1099496840630",
+  appId: "1:1099496840630:web:577b8d77949d19b160f517",
+  measurementId: "G-N46G08LV8P",
+);
 
 void main() async {
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: firebaseOptions);
 
   final auth = FirebaseAuth.instance;
 
@@ -29,12 +37,12 @@ void main() async {
       BusinessHoursFirestoreDataSource(firebaseAuth: auth);
 
   // 👉 REPLACE THESE with real professional UIDs
-  const String PROFESSIONAL_ID_1 = 'PROFESSIONAL_ID_1';
-  const String PROFESSIONAL_ID_2 = 'PROFESSIONAL_ID_2';
+  const String professionalId1 = 'PROFESSIONAL_ID_1';
+  const String professionalId2 = 'PROFESSIONAL_ID_2';
 
   final List<Map<String, dynamic>> sampleBusinessHours = [
     {
-      'professionalId': PROFESSIONAL_ID_1,
+      'professionalId': professionalId1,
       'workingDays': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
       'startTime': '09:00',
       'endTime': '17:00',
@@ -43,7 +51,7 @@ void main() async {
       ],
     },
     {
-      'professionalId': PROFESSIONAL_ID_2,
+      'professionalId': professionalId2,
       'workingDays': ['Tue', 'Wed', 'Thu', 'Sat'],
       'startTime': '10:00',
       'endTime': '19:00',
