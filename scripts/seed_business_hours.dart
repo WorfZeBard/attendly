@@ -1,4 +1,4 @@
-// scripts/seed_business_hours.dart
+// ./scripts/seed_business_hours.dart
 import 'package:attendly/features/business_hours/data/datasources/firebase/business_hours_firestore.dart';
 import 'package:attendly/features/business_hours/data/models/business_hours_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -10,34 +10,31 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // IMPORTANT: This script requires an authenticated user context.
-  // For UAT seeding, you might need to authenticate as the professional
-  // whose business hours you are setting, or use an admin account with
-  // appropriate permissions if your security rules allow it.
-  // This example assumes a default (potentially unauthenticated) context
-  // which might fail depending on your Firestore rules.
-  // You might need to sign in as the specific user first or use Admin SDK.
   final auth = FirebaseAuth.instance;
 
-  // Example: Sign in as a specific user (replace with actual credentials)
-  // try {
-  //   await auth.signInWithEmailAndPassword(
-  //     email: 'uat_prof1@example.com',
-  //     password: 'TempPass123!',
-  //   );
-  // } catch (e) {
-  //   print("Error signing in for business hours seeding: $e");
-  //   return; // Exit if authentication fails
-  // }
+  // 👉 UNCOMMENT & UPDATE if your Firestore rules require auth
+  try {
+    await auth.signInWithEmailAndPassword(
+      email: 'uat_prof1@example.com',
+      password: 'TempPass123!',
+    );
+    print('🔑 Authenticated as uat_prof1@example.com');
+  } catch (e) {
+    print(
+        '⚠️ Warning: Could not authenticate. Seeding may fail due to security rules.');
+    // Continue anyway — may work if rules allow writes from admin-like context
+  }
 
   final businessHoursDataSource =
       BusinessHoursFirestoreDataSource(firebaseAuth: auth);
 
-  // Sample Business Hours Data for UAT - Associate with known professional IDs
+  // 👉 REPLACE THESE with real professional UIDs
+  const String PROFESSIONAL_ID_1 = 'PROFESSIONAL_ID_1';
+  const String PROFESSIONAL_ID_2 = 'PROFESSIONAL_ID_2';
+
   final List<Map<String, dynamic>> sampleBusinessHours = [
     {
-      'professionalId':
-          'PROFESSIONAL_ID_1', // Replace with actual seeded professional ID
+      'professionalId': PROFESSIONAL_ID_1,
       'workingDays': ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
       'startTime': '09:00',
       'endTime': '17:00',
@@ -46,7 +43,7 @@ void main() async {
       ],
     },
     {
-      'professionalId': 'PROFESSIONAL_ID_2',
+      'professionalId': PROFESSIONAL_ID_2,
       'workingDays': ['Tue', 'Wed', 'Thu', 'Sat'],
       'startTime': '10:00',
       'endTime': '19:00',
@@ -66,18 +63,18 @@ void main() async {
         workingDays: List<String>.from(hoursData['workingDays'] as List),
         startTime: hoursData['startTime'] as String,
         endTime: hoursData['endTime'] as String,
-        breaks: List<Map<String, String>>.from((hoursData['breaks'] as List)
-            .map((b) => Map<String, String>.from(b))),
+        breaks: List<Map<String, String>>.from(
+          (hoursData['breaks'] as List).map((b) => Map<String, String>.from(b)),
+        ),
       );
-
       await businessHoursDataSource.setBusinessHours(businessHours);
       print(
-          'Successfully set business hours for professional: ${hoursData['professionalId']}');
+          '✅ Successfully set business hours for professional: ${hoursData['professionalId']}');
     } catch (e) {
       print(
-          'Error setting business hours for ${hoursData['professionalId']}: $e');
+          '❌ Error setting business hours for ${hoursData['professionalId']}: $e');
     }
   }
 
-  print('Business hours seeding completed.');
+  print('🏁 Business hours seeding completed.');
 }

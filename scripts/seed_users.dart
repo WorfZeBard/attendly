@@ -1,12 +1,10 @@
-// scripts/seed_users.dart
-
+// ./scripts/seed_users.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:attendly/firebase_options.dart';
 
 void main() async {
-  // No WidgetsFlutterBinding here — this is not a UI Flutter app
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -41,12 +39,10 @@ void main() async {
   for (final userData in sampleUsers) {
     try {
       print('Creating user: ${userData['email']}');
-
       final credential = await auth.createUserWithEmailAndPassword(
-        email: userData['email']!,
-        password: userData['password']!,
+        email: userData['email'] as String,
+        password: userData['password'] as String,
       );
-
       await firestore.collection('users').doc(credential.user!.uid).set({
         'name': userData['name'],
         'email': userData['email'],
@@ -54,12 +50,12 @@ void main() async {
         'role': userData['role'],
         'createdBy': 'uat-seed-script',
       });
-
-      print('Successfully created user: ${userData['email']}');
+      print(
+          '✅ Successfully created user: ${userData['email']} (UID: ${credential.user!.uid})');
     } catch (e) {
-      print('Error creating user ${userData['email']}: $e');
+      print('❌ Error creating user ${userData['email']}: $e');
     }
   }
 
-  print('User seeding completed.');
+  print('🏁 User seeding completed.');
 }
